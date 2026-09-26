@@ -1,0 +1,412 @@
+/**
+ * GovBridge API Client
+ * Typed axios wrapper for all backend API calls (SIH26129)
+ * Connects directly to the real FastAPI backend
+ */
+import axios from "axios";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+export const api = axios.create({
+  baseURL: `${API_BASE}/api`,
+  headers: { "Content-Type": "application/json" },
+  timeout: 30000,
+});
+
+// Attach JWT token to every request
+api.interceptors.request.use((config) => {
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("gb_token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  }
+  return config;
+});
+
+// Handle 401 — redirect to login
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401 && typeof window !== "undefined") {
+      localStorage.removeItem("gb_token");
+      localStorage.removeItem("gb_user");
+      // Only redirect if not already on the login page
+      if (!window.location.pathname.startsWith("/login")) {
+        window.location.href = "/login";
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
+// ── Auth ──────────────────────────────────────────────────────
+
+export interface LoginResponse {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+  user: User;
+}
+
+export interface User {
+  id: string;
+  email: string;
+  full_name: string;
+  role: "CITIZEN" | "DEPARTMENT_OFFICER" | "INTEGRATION_ADMIN" | "AUDITOR";
+  is_active: boolean;
+  department_id: string | null;
+  last_login: string | null;
+  created_at: string;
+}
+
+export const authApi = {
+  login: (email: string, password: string) =>
+    api.post<LoginResponse>("/auth/login", { email, password }),
+  me: () => api.get<User>("/users/me"),
+};
+
+// ── Applications ──────────────────────────────────────────────
+
+export type ApplicationStatus =
+  | "DRAFT"
+  | "SUBMITTED"
+  | "IN_REVIEW"
+  | "PENDING_DATA"
+  | "APPROVED"
+  | "REJECTED"
+  | "CANCELLED"
+  | "COMPLETED"
+  | "FAILED"
+  | "QUEUED"
+  | "MANUAL_REVIEW";
+
+export interface Application {
+  id: string;
+  reference_number: string;
+  citizen_id: string;
+  workflow_id: string;
+  department_id: string | null;
+  status: ApplicationStatus;
+  title: string | null;
+  current_step: number;
+  submitted_at: string | null;
+  resolved_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ApplicationStep {
+  id: string;
+  application_id: string;
+  step_order: number;
+  name: string | null;
+  status: string;
+  started_at: string | null;
+  completed_at: string | null;
+  result_data: Record<string, unknown>;
+  error_message: string | null;
+}
+
+export interface TimelineStep {
+  step_name: string;
+  step_order?: number;
+  status: string;
+  icon: string;
+  started_at?: string | null;
+  completed_at?: string | null;
+  error?: string | null;
+}
+
+export interface ApplicationTimeline {
+  application_id: string;
+  reference_number?: string;
+  status: string;
+  current_step: number;
+  timeline: TimelineStep[];
+}
+
+export const applicationsApi = {
+  list: (params?: { status?: string; skip?: number; limit?: number }) =>
+    api.get<Application[]>("/applications", { params }),
+  get: (id: string) => api.get<Application>(`/applications/${id}`),
+  create: (data: { workflow_id?: string; title: string; form_data?: Record<string, unknown> }) =>
+    api.post<Application>("/applications", data),
+  getSteps: (id: string) => api.get<ApplicationStep[]>(`/applications/${id}/steps`),
+  getTimeline: (id: string) => api.get<ApplicationTimeline>(`/applications/${id}/timeline`),
+  getConsents: (id: string) => api.get<Consent[]>(`/applications/${id}/consents`),
+  updateStatus: (id: string, status: string) =>
+    api.patch(`/applications/${id}/status`, null, { params: { new_status: status } }),
+};
+
+// ── Workflows ─────────────────────────────────────────────────
+
+export interface Workflow {
+  id: string;
+  name: string;
+  code: string;
+  description: string | null;
+  department_id: string | null;
+  version: number;
+  is_active: boolean;
+  sla_hours: number;
+  created_at: string;
+}
+
+export interface WorkflowExecutionState {
+  workflow_id: string;
+  application_id: string;
+  status: string;
+  current_step: number;
+  steps: ApplicationStep[];
+}
+
+export const workflowsApi = {
+  list: () => api.get<Workflow[]>("/workflows"),
+  get: (id: string) => api.get<Workflow>(`/workflows/${id}`),
+  start: (
+    id: string,
+    body?: {
+      citizen_uid?: string;
+      simulate_failure?: boolean;
+      simulate_failure_target?: string;
+      simulate_failure_connector?: string;
+      max_retries?: number;
+    }
+  ) =>
+    api.post<{ status: string; application_id: string; current_step: number; decision?: string }>(
+      `/workflows/${id}/start`,
+      {
+        citizen_uid: body?.citizen_uid || "DEMO001",
+        simulate_failure_connector:
+          body?.simulate_failure_connector ||
+          (body?.simulate_failure ? body?.simulate_failure_target || "MOCK_EMPLOYMENT" : undefined),
+        max_retries: body?.max_retries || 3,
+      }
+    ),
+  retry: (id: string) =>
+    api.post<{ status: string; message: string; recovered?: boolean }>(`/workflows/${id}/retry`),
+  manualReview: (id: string, notes?: string) =>
+    api.post<{ status: string; message: string }>(`/workflows/${id}/manual-review`, { notes }),
+  completeStep: (id: string, stepOrder: number, resultData?: Record<string, unknown>) =>
+    api.post<{ status: string; completed_step: number }>(`/workflows/${id}/complete-step`, { step_order: stepOrder, result_data: resultData }),
+};
+
+// ── Connectors ────────────────────────────────────────────────
+
+export interface Connector {
+  id: string;
+  name: string;
+  code: string;
+  description: string | null;
+  department_id: string | null;
+  system_type?: string | null;
+  protocol: "REST_JSON" | "SOAP_XML" | "DATABASE" | "WEBHOOK" | "GRAPHQL";
+  base_url: string | null;
+  auth_type?: string | null;
+  authentication?: string | null;
+  status: "ACTIVE" | "INACTIVE" | "DEGRADED" | "ERROR";
+  is_mock: boolean;
+  tags: string[];
+  timeout_seconds: number;
+  last_health_check?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ConnectorHealth {
+  id: string;
+  connector_id: string;
+  status: string;
+  latency_ms: number | null;
+  error_message: string | null;
+  checked_at: string;
+}
+
+export const connectorsApi = {
+  list: () => api.get<Connector[]>("/connectors"),
+  get: (id: string) => api.get<Connector>(`/connectors/${id}`),
+  healthCheck: (id: string) => api.post<ConnectorHealth>(`/connectors/${id}/health-check`),
+  ping: (id: string) => api.post<ConnectorHealth>(`/connectors/${id}/ping`),
+  healthHistory: (id: string) => api.get<ConnectorHealth[]>(`/connectors/${id}/health`),
+};
+
+// ── Master Identity ───────────────────────────────────────────
+
+export interface MasterIdentity {
+  id: string;
+  master_citizen_id: string;
+  masked_id: string;
+  full_name: string;
+  gender: string | null;
+  state: string | null;
+  district: string | null;
+  masked_phone: string | null;
+  masked_email: string | null;
+  is_verified: boolean;
+  confidence_score: number;
+  created_at: string;
+  mappings_count: number;
+}
+
+export interface IdentityMapping {
+  id: string;
+  master_identity_id: string;
+  source_system: string;
+  source_id: string;
+  source_schema: string | null;
+  is_active: boolean;
+  last_synced: string | null;
+}
+
+export const identityApi = {
+  get: (masterId: string = "MAHA-CIT-10284") =>
+    api.get<MasterIdentity>(`/identity/${masterId}`),
+  getMappings: (masterId: string = "MAHA-CIT-10284") =>
+    api.get<IdentityMapping[]>(`/identity/${masterId}/mappings`),
+};
+
+// ── Consents ──────────────────────────────────────────────────
+
+export interface Consent {
+  id: string;
+  consent_id?: string;
+  citizen_id: string;
+  application_id: string | null;
+  purpose: string;
+  data_categories: string[];
+  requested_data?: string[];
+  status: "ACTIVE" | "PENDING" | "GRANTED" | "DENIED" | "REVOKED" | "EXPIRED";
+  granted_at: string | null;
+  expires_at: string | null;
+  revoked_at?: string | null;
+  created_at: string;
+}
+
+export const consentsApi = {
+  list: (params?: { application_id?: string; status_filter?: string }) =>
+    api.get<Consent[]>("/consents", { params }),
+  get: (id: string) => api.get<Consent>(`/consent/${id}`),
+  create: (data: {
+    application_id?: string;
+    citizen_id?: string;
+    purpose: string;
+    requested_data?: string[];
+    data_categories?: string[];
+    expires_in_days?: number;
+  }) => api.post<Consent>("/consent", data),
+  revoke: (id: string, reason?: string) =>
+    api.post<Consent>(`/consent/${id}/revoke`, null, { params: { reason } }),
+};
+
+// ── Events ────────────────────────────────────────────────────
+
+export interface GovEvent {
+  id: string;
+  event_type: string;
+  source: string | null;
+  severity: "INFO" | "WARNING" | "ERROR" | "CRITICAL";
+  payload: Record<string, unknown>;
+  is_processed: boolean;
+  processed_at: string | null;
+  correlation_id: string | null;
+  application_id: string | null;
+  created_at: string;
+}
+
+export const eventsApi = {
+  list: (params?: {
+    application_id?: string;
+    event_type?: string;
+    severity?: string;
+    limit?: number;
+    skip?: number;
+  }) => api.get<GovEvent[]>("/events", { params }),
+  get: (id: string) => api.get<GovEvent>(`/events/${id}`),
+};
+
+// ── Exceptions ────────────────────────────────────────────────
+
+export interface SystemException {
+  id: string;
+  exception_id?: string;
+  application_id: string | null;
+  connector_id: string | null;
+  exception_type: string;
+  error_type: string | null;
+  source: string;
+  severity: "INFO" | "WARNING" | "ERROR" | "CRITICAL";
+  message: string;
+  error_message: string | null;
+  retry_count: number;
+  status: "OPEN" | "RETRYING" | "QUEUED" | "MANUAL_REVIEW" | "RESOLVED";
+  resolved_at: string | null;
+  resolution_notes: string | null;
+  created_at: string;
+}
+
+export const exceptionsApi = {
+  list: (params?: { status?: string; application_id?: string; limit?: number }) =>
+    api.get<SystemException[]>("/exceptions", { params }),
+  get: (id: string) => api.get<SystemException>(`/exceptions/${id}`),
+  retry: (workflowId: string) =>
+    api.post<{ status: string; message: string; recovered?: boolean }>(`/workflows/${workflowId}/retry`),
+  manualReview: (workflowId: string, notes?: string) =>
+    api.post<{ status: string; message: string }>(`/workflows/${workflowId}/manual-review`, { notes }),
+};
+
+// ── Audit ─────────────────────────────────────────────────────
+
+export interface AuditLog {
+  id: string;
+  event_id?: string;
+  timestamp?: string;
+  actor?: string | null;
+  role?: string | null;
+  application?: string | null;
+  application_id?: string | null;
+  action: string;
+  source?: string | null;
+  target?: string | null;
+  purpose?: string | null;
+  consent_id?: string | null;
+  result?: string;
+  integrity_hash?: string | null;
+  department_id?: string | null;
+  status?: string;
+  details?: string | null;
+  created_at: string;
+  integrity_verified?: boolean;
+}
+
+export const auditApi = {
+  list: (params?: {
+    application_id?: string;
+    actor?: string;
+    action?: string;
+    result?: string;
+    date?: string;
+    limit?: number;
+  }) => api.get<AuditLog[]>("/audit", { params }),
+  get: (id: string) => api.get<AuditLog>(`/audit/${id}`),
+};
+
+// ── Dashboard ─────────────────────────────────────────────────
+
+export interface DashboardStats {
+  total_applications: number;
+  pending_applications: number;
+  approved_applications: number;
+  active_connectors: number;
+  total_connectors: number;
+  active_workflows: number;
+  total_citizens: number;
+  events_today: number;
+  pending_consents: number;
+  recent_applications: Application[];
+  connector_health: ConnectorHealth[];
+}
+
+export const dashboardApi = {
+  getStats: () => api.get<DashboardStats>("/dashboard/stats"),
+};

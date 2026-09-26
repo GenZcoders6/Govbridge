@@ -1,0 +1,216 @@
+networks:
+  govbridge_net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+
+services:
+  # ── Database ────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: govbridge_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-govbridge}
+      POSTGRES_USER: ${POSTGRES_USER:-govbridge_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-govbridge_password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - govbridge_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-govbridge_user} -d ${POSTGRES_DB:-govbridge}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Cache / Queue ─────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: govbridge_redis
+    restart: unless-stopped
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - govbridge_net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Backend (FastAPI) ─────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: govbridge_backend
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=${DATABASE_URL:-postgresql://govbridge_user:govbridge_password@postgres:5432/govbridge}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-dev-secret-key}
+      - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
+      - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-60}
+      - APP_ENV=${APP_ENV:-development}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
+      - MOCK_IDENTITY_URL=http://mock-identity:8001
+      - MOCK_EDUCATION_URL=http://mock-education:8002
+      - MOCK_EMPLOYMENT_URL=http://mock-employment:8003
+      - MOCK_SKILL_URL=http://mock-skill:8004
+      - MOCK_REVENUE_URL=http://mock-revenue:8005
+      - MOCK_WELFARE_URL=http://mock-welfare:8006
+    ports:
+      - "8000:8000"
+    networks:
+      - govbridge_net
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mock-identity:
+        condition: service_started
+      mock-education:
+        condition: service_started
+      mock-employment:
+        condition: service_started
+      mock-skill:
+        condition: service_started
+      mock-revenue:
+        condition: service_started
+      mock-welfare:
+        condition: service_started
+    volumes:
+      - ./backend:/app
+
+  # ── Frontend (Next.js) ─────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: govbridge_frontend
+    restart: unless-stopped
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_APP_NAME=GovBridge
+    ports:
+      - "3000:3000"
+    networks:
+      - govbridge_net
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+
+  # ── Mock Services ─────────────────────────────────────────
+  mock-identity:
+    build:
+      context: ./mock-services
+      dockerfile: Dockerfile
+    container_name: govbridge_mock_identity
+    restart: unless-stopped
+    environment:
+      - SERVICE_NAME=identity
+      - SERVICE_PORT=8001
+    command: uvicorn identity_service:app --host 0.0.0.0 --port 8001 --reload
+    ports:
+      - "8001:8001"
+    networks:
+      - govbridge_net
+    volumes:
+      - ./mock-services:/app
+
+  mock-education:
+    build:
+      context: ./mock-services
+      dockerfile: Dockerfile
+    container_name: govbridge_mock_education
+    restart: unless-stopped
+    environment:
+      - SERVICE_NAME=education
+      - SERVICE_PORT=8002
+    command: uvicorn education_service:app --host 0.0.0.0 --port 8002 --reload
+    ports:
+      - "8002:8002"
+    networks:
+      - govbridge_net
+    volumes:
+      - ./mock-services:/app
+
+  mock-employment:
+    build:
+      context: ./mock-services
+      dockerfile: Dockerfile
+    container_name: govbridge_mock_employment
+    restart: unless-stopped
+    environment:
+      - SERVICE_NAME=employment
+      - SERVICE_PORT=8003
+    command: uvicorn employment_service:app --host 0.0.0.0 --port 8003 --reload
+    ports:
+      - "8003:8003"
+    networks:
+      - govbridge_net
+    volumes:
+      - ./mock-services:/app
+
+  mock-skill:
+    build:
+      context: ./mock-services
+      dockerfile: Dockerfile
+    container_name: govbridge_mock_skill
+    restart: unless-stopped
+    environment:
+      - SERVICE_NAME=skill
+      - SERVICE_PORT=8004
+    command: uvicorn skill_service:app --host 0.0.0.0 --port 8004 --reload
+    ports:
+      - "8004:8004"
+    networks:
+      - govbridge_net
+    volumes:
+      - ./mock-services:/app
+
+  mock-revenue:
+    build:
+      context: ./mock-services
+      dockerfile: Dockerfile
+    container_name: govbridge_mock_revenue
+    restart: unless-stopped
+    environment:
+      - SERVICE_NAME=revenue
+      - SERVICE_PORT=8005
+    command: uvicorn revenue_service:app --host 0.0.0.0 --port 8005 --reload
+    ports:
+      - "8005:8005"
+    networks:
+      - govbridge_net
+    volumes:
+      - ./mock-services:/app
+
+  mock-welfare:
+    build:
+      context: ./mock-services
+      dockerfile: Dockerfile
+    container_name: govbridge_mock_welfare
+    restart: unless-stopped
+    environment:
+      - SERVICE_NAME=welfare
+      - SERVICE_PORT=8006
+    command: uvicorn welfare_service:app --host 0.0.0.0 --port 8006 --reload
+    ports:
+      - "8006:8006"
+    networks:
+      - govbridge_net
+    volumes:
+      - ./mock-services:/app

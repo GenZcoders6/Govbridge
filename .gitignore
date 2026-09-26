@@ -1,0 +1,67 @@
+# ============================================================
+# GovBridge Root .gitignore
+# Smart India Hackathon 2026 — Problem Statement SIH26129
+# ============================================================
+
+# Environment variables & secrets (CRITICAL: Never commit .env)
+.env
+.env.local
+.env.*.local
+*.env
+!.env.example
+
+# Node / Frontend dependencies & build output
+node_modules/
+.next/
+out/
+dist/
+build/
+*.tsbuildinfo
+next-env.d.ts
+
+# Python / Backend virtual environments & byte-code
+venv/
+.venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Local databases & runtime state
+*.db
+*.sqlite
+*.sqlite3
+govbridge_dev.db
+*.rdb
+
+# Logs & debug outputs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Editor & IDE configurations
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Operating System files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary & deployment artifacts
+.vercel
+tmp/
+temp/
