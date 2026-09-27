@@ -76,38 +76,20 @@ export function MySchemeLogo({ height = 40, darkBackground = false }: { height?:
  * Features National Tricolor Arch Bridge emblem & Official Title
  */
 export function GovBridgeLogo({ height = 44, darkBackground = false }: { height?: number; darkBackground?: boolean }) {
-  const iconSrc = "/govbridge_icon.png";
+  const imgSrc = darkBackground ? "/govbridge_logo_dark_bg.png" : "/govbridge_logo_clean.png";
 
   return (
-    <div style={{ display: "inline-flex", alignItems: "center", gap: 10, userSelect: "none" }}>
-      {/* Official Emblem Icon (Ashoka Pillar, Arch Bridge, Dome, Signal Waves) */}
+    <div style={{ display: "inline-flex", alignItems: "center", userSelect: "none" }}>
       <img
-        src={iconSrc}
-        alt="GovBridge Emblem"
+        src={imgSrc}
+        alt="GovBridge - Public Services Interoperability"
         style={{
           height: height,
           width: "auto",
           objectFit: "contain",
           display: "block",
-          filter: darkBackground ? "brightness(0) invert(1) drop-shadow(0 2px 6px rgba(0,0,0,0.5))" : "none",
         }}
       />
-      {/* GovBridge.gov.in Typography & Subtitle Stack with Indian Flag Tricolor Lines */}
-      <div style={{ display: "flex", flexDirection: "column" }}>
-        <div style={{ fontSize: height * 0.48, fontWeight: 900, lineHeight: 1, letterSpacing: "-0.02em" }}>
-          <span style={{ color: darkBackground ? "#ffffff" : "#0f172a" }}>Gov</span>
-          <span style={{ color: "#2563eb" }}>Bridge</span>
-          <span style={{ color: darkBackground ? "#cbd5e1" : "#475569", fontSize: height * 0.32, marginLeft: 2, fontWeight: 800 }}>.gov.in</span>
-        </div>
-        {/* Indian Flag Color Underline Bar */}
-        <div style={{ display: "flex", width: "100%", height: 3, margin: "3px 0 2px", borderRadius: 2, overflow: "hidden" }}>
-          <div style={{ flex: 1, background: "#f97316" }} />
-          <div style={{ flex: 1, background: "#16a34a" }} />
-        </div>
-        <span style={{ fontSize: Math.max(8, height * 0.18), fontWeight: 800, color: darkBackground ? "#cbd5e1" : "#475569", letterSpacing: "0.04em" }}>
-          NATIONAL PUBLIC SERVICES INTEROPERABILITY PORTAL
-        </span>
-      </div>
     </div>
   );
 }
