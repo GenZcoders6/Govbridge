@@ -150,16 +150,17 @@ const NAV: NavSection[] = [
     items: [{ label: "Dashboard", href: "/dashboard", icon: <Icons.Dashboard /> }],
   },
   {
-    section: "Unified Services",
+    section: "Departmental Services",
     items: [
-      { label: "New Application", href: "/applications/new", icon: <Icons.NewApp />, tag: "Live" },
+      { label: "Services Catalogue", href: "/services", icon: <Icons.NewApp />, tag: "New" },
       { label: "My Applications", href: "/applications", icon: <Icons.Applications /> },
+      { label: "New Application", href: "/applications/new", icon: <Icons.NewApp />, roles: ["CITIZEN", "INTEGRATION_ADMIN"] },
     ],
   },
   {
     section: "Workflow Center",
     items: [
-      { label: "Active Workflows", href: "/workflows", icon: <Icons.Workflows /> },
+      { label: "Active Workflows", href: "/workflows", icon: <Icons.Workflows />, roles: ["DEPARTMENT_OFFICER", "INTEGRATION_ADMIN"] },
       { label: "Workflow Designer", href: "/workflows/designer", icon: <Icons.Designer />, roles: ["INTEGRATION_ADMIN"] },
       { label: "Exceptions", href: "/workflows/exceptions", icon: <Icons.Exceptions />, roles: ["DEPARTMENT_OFFICER", "INTEGRATION_ADMIN"] },
     ],
@@ -176,8 +177,8 @@ const NAV: NavSection[] = [
   {
     section: "Identity & Consent",
     items: [
-      { label: "Master Identity", href: "/identity", icon: <Icons.Identity /> },
-      { label: "Consent Manager", href: "/consents", icon: <Icons.Consent /> },
+      { label: "Master Identity", href: "/identity", icon: <Icons.Identity />, roles: ["CITIZEN", "INTEGRATION_ADMIN"] },
+      { label: "Consent Manager", href: "/consents", icon: <Icons.Consent />, roles: ["CITIZEN", "INTEGRATION_ADMIN"] },
       { label: "Access Policies", href: "/policies", icon: <Icons.Policy />, roles: ["INTEGRATION_ADMIN"] },
     ],
   },

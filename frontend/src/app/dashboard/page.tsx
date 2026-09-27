@@ -198,25 +198,84 @@ export default function DashboardPage() {
     });
   };
 
+  const isCitizen = (user?.role || "CITIZEN") === "CITIZEN";
+  const isOfficer = user?.role === "DEPARTMENT_OFFICER";
+
   return (
     <AppShell
-      title="Dashboard"
-      subtitle="Government Interoperability Platform — Live System Overview"
+      title={isCitizen ? "Citizen e-Services Portal" : isOfficer ? "Department Review Portal" : "Dashboard"}
+      subtitle={isCitizen ? "Official State e-Governance Services & Application Tracker" : "Government Interoperability Platform — Live System Overview"}
     >
-      {/* ── SIH Hackathon Judge Demonstration Hero Banner ── */}
-      <div
-        style={{
-          padding: "28px 32px",
-          background: "linear-gradient(135deg, #071529 0%, #0c2044 50%, #0f2d5e 100%)",
-          borderRadius: "16px",
-          color: "#ffffff",
-          marginBottom: "24px",
-          border: "1.5px solid rgba(56, 189, 248, 0.25)",
-          boxShadow: "0 12px 36px -10px rgba(7, 21, 41, 0.35)",
-          position: "relative",
-          overflow: "hidden",
-        }}
-      >
+      {/* ── Citizen Role Hero Banner ── */}
+      {isCitizen ? (
+        <div
+          style={{
+            padding: "24px 28px",
+            background: "linear-gradient(135deg, #1e3a8a 0%, #1e40af 60%, #0284c7 100%)",
+            borderRadius: "16px",
+            color: "#ffffff",
+            marginBottom: "24px",
+            border: "1.5px solid rgba(255, 255, 255, 0.2)",
+            boxShadow: "0 10px 30px -8px rgba(30, 58, 138, 0.3)",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
+            <div>
+              <span
+                style={{
+                  fontSize: 11,
+                  fontWeight: 800,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.06em",
+                  background: "rgba(255,255,255,0.2)",
+                  padding: "3px 10px",
+                  borderRadius: 20,
+                  color: "#e0f2fe",
+                }}
+              >
+                Citizen Portal · Master ID: MAHA-CIT-10284
+              </span>
+              <h1 style={{ fontSize: 24, fontWeight: 900, marginTop: 8, marginBottom: 4, color: "#ffffff" }}>
+                Welcome, {user?.full_name || "Sunil Patil"}
+              </h1>
+              <p style={{ fontSize: 13, color: "rgba(255,255,255,0.85)", margin: 0, maxWidth: 620 }}>
+                Access verified state e-governance services, apply for certificates and concession passes, and track cross-departmental application progress in real time.
+              </p>
+            </div>
+
+            <div style={{ display: "flex", gap: 10 }}>
+              <Link
+                href="/services"
+                className="btn"
+                style={{ background: "#ffffff", color: "#1e3a8a", fontWeight: 800, padding: "10px 20px" }}
+              >
+                Browse Services Catalogue →
+              </Link>
+              <Link
+                href="/applications"
+                className="btn"
+                style={{ background: "rgba(255,255,255,0.15)", color: "#ffffff", border: "1px solid rgba(255,255,255,0.3)", padding: "10px 18px" }}
+              >
+                My Applications
+              </Link>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* ── SIH Hackathon Judge Demonstration Hero Banner (Admin & Officer) ── */
+        <div
+          style={{
+            padding: "28px 32px",
+            background: "linear-gradient(135deg, #071529 0%, #0c2044 50%, #0f2d5e 100%)",
+            borderRadius: "16px",
+            color: "#ffffff",
+            marginBottom: "24px",
+            border: "1.5px solid rgba(56, 189, 248, 0.25)",
+            boxShadow: "0 12px 36px -10px rgba(7, 21, 41, 0.35)",
+            position: "relative",
+            overflow: "hidden",
+          }}
+        >
         {/* Decorative background glow */}
         <div
           style={{
@@ -462,9 +521,12 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+      )}
 
-      {/* ── Connected Systems Topology around GovBridge ── */}
-      <ConnectedSystemsTopology onOpenDemo={(step) => { setDemoStep(step); setDemoModalOpen(true); }} />
+      {/* ── Connected Systems Topology around GovBridge (Admin & Officer only) ── */}
+      {!isCitizen && (
+        <ConnectedSystemsTopology onOpenDemo={(step) => { setDemoStep(step); setDemoModalOpen(true); }} />
+      )}
 
       {/* ── Pre-Seeded Demo Spotlight: APP-2026-1048 ── */}
       <div

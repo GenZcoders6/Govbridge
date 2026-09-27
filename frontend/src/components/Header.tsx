@@ -1,5 +1,6 @@
 "use client";
 import { useAuthStore } from "@/store/authStore";
+import { GovBridgeLogo } from "@/components/GovLogos";
 
 interface HeaderProps {
   title: string;
@@ -9,15 +10,6 @@ interface HeaderProps {
 const BreadcrumbIcon = () => (
   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
     <path d="M5.5 3L9.5 7L5.5 11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
-
-const GovBridgeLogo = () => (
-  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-    <rect x="1" y="1" width="7" height="7" rx="2" fill="#2563eb" opacity="0.9"/>
-    <rect x="10" y="1" width="7" height="7" rx="2" fill="#2563eb" opacity="0.5"/>
-    <rect x="1" y="10" width="7" height="7" rx="2" fill="#2563eb" opacity="0.5"/>
-    <rect x="10" y="10" width="7" height="7" rx="2" fill="#2563eb" opacity="0.9"/>
   </svg>
 );
 
@@ -43,7 +35,7 @@ export function Header({ title, subtitle }: HeaderProps) {
             marginBottom: 2,
           }}
         >
-          <GovBridgeLogo />
+          <GovBridgeLogo height={24} />
           <span style={{ fontSize: 12, color: "var(--gray-400)", display: "flex", alignItems: "center", gap: 4 }}>
             GovBridge
             <BreadcrumbIcon />

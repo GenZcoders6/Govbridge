@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF9933"/>
+      <stop offset="50%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#138808"/>
+    </linearGradient>
+    <linearGradient id="jacketGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#854d0e"/>
+      <stop offset="100%" stop-color="#713f12"/>
+    </linearGradient>
+    <clipPath id="circleClip">
+      <circle cx="50" cy="50" r="48"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background Circle -->
+  <circle cx="50" cy="50" r="49" fill="#f8fafc" stroke="#e2e8f0" stroke-width="2"/>
+  
+  <g clip-path="url(#circleClip)">
+    <!-- Tricolour Soft Backdrop Aura -->
+    <circle cx="50" cy="50" r="48" fill="#e0f2fe"/>
+    
+    <!-- Body & Kurta -->
+    <path d="M 20,95 L 80,95 L 75,62 L 64,55 L 36,55 L 25,62 Z" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    
+    <!-- Nehru Vest Jacket -->
+    <path d="M 28,95 L 42,95 L 42,60 L 33,63 Z" fill="url(#jacketGrad)"/>
+    <path d="M 72,95 L 58,95 L 58,60 L 67,63 Z" fill="url(#jacketGrad)"/>
+    <!-- Collar -->
+    <path d="M 40,58 L 50,62 L 60,58 L 58,54 L 42,54 Z" fill="#713f12"/>
+    <!-- Pocket Square -->
+    <polygon points="34,70 38,67 40,70" fill="#FF9933"/>
+
+    <!-- Neck & Face -->
+    <path d="M 42,54 L 58,54 L 56,44 L 44,44 Z" fill="#fbcfe8"/>
+    <ellipse cx="50" cy="38" rx="16" ry="19" fill="#fed7aa"/>
+
+    <!-- White Beard & Hair Signature -->
+    <!-- Hair -->
+    <path d="M 33,36 C 32,24 40,16 50,16 C 60,16 68,24 67,36 C 65,22 58,19 50,19 C 42,19 35,22 33,36 Z" fill="#f8fafc"/>
+    <!-- Beard -->
+    <path d="M 34,38 C 34,54 42,60 50,60 C 58,60 66,54 66,38 C 62,48 56,54 50,54 C 44,54 38,48 34,38 Z" fill="#f8fafc"/>
+    <path d="M 40,42 C 43,45 47,46 50,46 C 53,46 57,45 60,42 C 57,47 53,48 50,48 C 47,48 43,47 40,42 Z" fill="#e2e8f0"/>
+
+    <!-- Spectacles -->
+    <rect x="37" y="32" width="10" height="7" rx="2" fill="none" stroke="#334155" stroke-width="1.5"/>
+    <rect x="53" y="32" width="10" height="7" rx="2" fill="none" stroke="#334155" stroke-width="1.5"/>
+    <line x1="47" y1="35" x2="53" y2="35" stroke="#334155" stroke-width="1.5"/>
+    <line x1="33" y1="34" x2="37" y2="34" stroke="#334155" stroke-width="1.2"/>
+    <line x1="63" y1="34" x2="67" y2="34" stroke="#334155" stroke-width="1.2"/>
+
+    <!-- Eyes -->
+    <circle cx="42" cy="35.5" r="1.5" fill="#1e293b"/>
+    <circle cx="58" cy="35.5" r="1.5" fill="#1e293b"/>
+
+    <!-- Bindi / Tilak / Smile -->
+    <path d="M 45,44 Q 50,47 55,44" fill="none" stroke="#d97706" stroke-width="1.2" stroke-linecap="round"/>
+  </g>
+
+  <!-- Golden Ring -->
+  <circle cx="50" cy="50" r="47.5" fill="none" stroke="#FF9933" stroke-width="2"/>
+</svg>

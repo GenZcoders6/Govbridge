@@ -12,6 +12,8 @@ export default function ApplicationsPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("");
 
+  const role = user?.role || "CITIZEN";
+
   useEffect(() => {
     applicationsApi
       .list()
@@ -19,9 +21,7 @@ export default function ApplicationsPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const filtered = apps.filter((a) =>
-    filter ? a.status === filter : true
-  );
+  const filtered = apps.filter((a) => (filter ? a.status === filter : true));
 
   const formatDate = (iso: string | null) => {
     if (!iso) return "—";
@@ -31,20 +31,37 @@ export default function ApplicationsPage() {
   const STATUSES = ["SUBMITTED", "IN_REVIEW", "COMPLETED", "APPROVED", "QUEUED", "MANUAL_REVIEW", "FAILED", "REJECTED"];
 
   return (
-    <AppShell title="My Applications" subtitle="Track all your service applications">
+    <AppShell
+      title={role === "CITIZEN" ? "My Applications" : role === "DEPARTMENT_OFFICER" ? "Department Review Queue" : "System Applications"}
+      subtitle={role === "CITIZEN" ? "Track your submitted government service requests" : "Manage citizen service applications"}
+    >
       <div className="page-header">
         <div>
-          <h1 className="page-header-title">Applications</h1>
+          <h1 className="page-header-title">
+            {role === "CITIZEN" ? "My Service Applications" : role === "DEPARTMENT_OFFICER" ? "Department Action Queue" : "All System Applications"}
+          </h1>
           <p className="page-header-subtitle">
-            {user?.role === "CITIZEN" ? "Your submitted service applications" : "All citizen service applications"}
+            {role === "CITIZEN"
+              ? "View status, progress timelines, and sanction certificates for your applications"
+              : role === "DEPARTMENT_OFFICER"
+              ? "Review pending citizen applications requiring department officer clearance"
+              : "Cross-departmental application registry & execution monitor"}
           </p>
         </div>
-        <Link href="/applications/new" className="btn btn-primary">
-          + New Application
-        </Link>
+
+        <div style={{ display: "flex", gap: 10 }}>
+          <Link href="/services" className="btn btn-secondary">
+            Department Services Catalogue
+          </Link>
+          {role === "CITIZEN" && (
+            <Link href="/applications/new" className="btn btn-primary">
+              + New Application
+            </Link>
+          )}
+        </div>
       </div>
 
-      {/* Filter */}
+      {/* Filter Tabs */}
       <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
         <button
           className={`btn btn-sm ${!filter ? "btn-primary" : "btn-secondary"}`}
@@ -52,15 +69,19 @@ export default function ApplicationsPage() {
         >
           All ({apps.length})
         </button>
-        {STATUSES.map((s) => (
-          <button
-            key={s}
-            className={`btn btn-sm ${filter === s ? "btn-primary" : "btn-secondary"}`}
-            onClick={() => setFilter(s)}
-          >
-            {s.replace("_", " ")} ({apps.filter((a) => a.status === s).length})
-          </button>
-        ))}
+        {STATUSES.map((s) => {
+          const count = apps.filter((a) => a.status === s).length;
+          if (count === 0 && role === "CITIZEN") return null;
+          return (
+            <button
+              key={s}
+              className={`btn btn-sm ${filter === s ? "btn-primary" : "btn-secondary"}`}
+              onClick={() => setFilter(s)}
+            >
+              {s.replace("_", " ")} ({count})
+            </button>
+          );
+        })}
       </div>
 
       <div className="card">
@@ -73,12 +94,12 @@ export default function ApplicationsPage() {
             <div style={{ fontSize: 40, marginBottom: 8 }}>📋</div>
             <div className="empty-state-title">No applications found</div>
             <div className="empty-state-text">
-              {user?.role === "CITIZEN"
-                ? "Submit a new application to get started"
-                : "No applications match the current filter"}
+              {role === "CITIZEN"
+                ? "Browse the Department Services Catalogue to submit a new request"
+                : "No applications match the current filter criteria"}
             </div>
-            <Link href="/applications/new" className="btn btn-primary" style={{ marginTop: 16 }}>
-              Submit Application
+            <Link href="/services" className="btn btn-primary" style={{ marginTop: 16 }}>
+              Browse Services Catalogue
             </Link>
           </div>
         ) : (
@@ -86,37 +107,43 @@ export default function ApplicationsPage() {
             <table>
               <thead>
                 <tr>
-                  <th>Reference</th>
-                  <th>Service / Title</th>
+                  <th>Reference Number</th>
+                  <th>Government Service</th>
                   <th>Status</th>
-                  <th>Step</th>
-                  <th>Submitted</th>
-                  <th>Resolved</th>
-                  <th></th>
+                  <th>Estimated SLA</th>
+                  <th>Submitted Date</th>
+                  <th style={{ textAlign: "right" }}>Action</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.map((app) => (
                   <tr key={app.id}>
                     <td>
-                      <span className="monospace" style={{ fontSize: 12, fontWeight: 600, color: "#2563eb" }}>
-                        {app.reference_number}
-                      </span>
+                      <Link href={`/applications/${app.id}`}>
+                        <span className="monospace" style={{ fontSize: 12, fontWeight: 700, color: "#2563eb" }}>
+                          {app.reference_number}
+                        </span>
+                      </Link>
                     </td>
-                    <td style={{ maxWidth: 200 }}>
-                      <div style={{ fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {app.title || "Untitled Application"}
+                    <td style={{ maxWidth: 240 }}>
+                      <div style={{ fontWeight: 600, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {app.title || "Unified Skill & Employment Benefit"}
                       </div>
                     </td>
-                    <td><StatusBadge status={app.status} /></td>
                     <td>
-                      <span style={{ fontSize: 12, color: "#64748b" }}>Step {app.current_step}</span>
+                      <StatusBadge status={app.status} />
                     </td>
-                    <td style={{ fontSize: 12, color: "#64748b" }}>{formatDate(app.submitted_at)}</td>
-                    <td style={{ fontSize: 12, color: "#64748b" }}>{formatDate(app.resolved_at)}</td>
                     <td>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: "#16a34a" }}>
+                        {app.status === "APPROVED" || app.status === "COMPLETED" ? "Sanctioned" : "48 Hours SLA"}
+                      </span>
+                    </td>
+                    <td style={{ fontSize: 12, color: "#64748b" }}>
+                      {formatDate(app.submitted_at || app.created_at)}
+                    </td>
+                    <td style={{ textAlign: "right" }}>
                       <Link href={`/applications/${app.id}`} className="btn btn-sm btn-secondary">
-                        View
+                        {role === "DEPARTMENT_OFFICER" && app.status === "MANUAL_REVIEW" ? "Review Application →" : "View Status →"}
                       </Link>
                     </td>
                   </tr>
