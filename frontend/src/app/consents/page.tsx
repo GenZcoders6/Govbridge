@@ -173,7 +173,7 @@ export default function ConsentsPage() {
           <div className="empty-state">
             <div style={{ fontSize: 40, marginBottom: 8 }}>🔏</div>
             <div className="empty-state-title">No consent records found</div>
-            <div className="empty-state-text">Click "Grant Consent" to authorize cross-departmental verification</div>
+            <div className="empty-state-text">Click &quot;Grant Consent&quot; to authorize cross-departmental verification</div>
             <button
               className="btn btn-primary"
               style={{ marginTop: 16 }}

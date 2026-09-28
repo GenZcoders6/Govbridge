@@ -2,58 +2,56 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { authApi } from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
 import { useDepartmentStore, DEPARTMENTS, type DepartmentCode } from "@/store/departmentStore";
-import { AshokaEmblemLogo, GovBridgeLogo } from "@/components/GovLogos";
 
 export default function LoginPage() {
   const router = useRouter();
   const setAuth = useAuthStore((s) => s.setAuth);
   const setActiveDepartment = useDepartmentStore((s) => s.setActiveDepartment);
 
-  const [portalType, setPortalType] = useState<"CITIZEN" | "DEPARTMENT_OFFICER" | "INTEGRATION_ADMIN" | "AUDITOR">("DEPARTMENT_OFFICER");
-  const [selectedDept, setSelectedDept] = useState<DepartmentCode>("MSRTC");
+  // SSO Service Provider Tabs: DigiLocker | JAN PARICHAY | e-Pramaan
+  const [ssoProvider, setSsoProvider] = useState<"DigiLocker" | "JAN PARICHAY" | "e-Pramaan">("DigiLocker");
 
-  const [username, setUsername] = useState("officer.msrtc@govbridge.demo");
+  // Auth Method Switcher: Mobile | Username | Aadhaar / PAN
+  const [authMethod, setAuthMethod] = useState<"Mobile" | "Username" | "Aadhaar / PAN">("Username");
+
+  // Form Fields
+  const [username, setUsername] = useState("officer@govbridge.demo");
   const [password, setPassword] = useState("officer123");
   const [showPassword, setShowPassword] = useState(false);
+  const [pinlessAuth, setPinlessAuth] = useState(false);
   const [consentTerms, setConsentTerms] = useState(true);
+
+  // States
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!consentTerms) {
-      setError("You must accept the terms of use consent to proceed.");
+      setError("You must consent to terms of use to proceed.");
       return;
     }
+
+    if (!username.trim() || !password.trim()) {
+      setError("Sign in failed. Please check your credentials.");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
     try {
-      if (portalType === "DEPARTMENT_OFFICER") {
-        setActiveDepartment(selectedDept);
-        const deptInfo = DEPARTMENTS[selectedDept];
+      // Simulate realistic authenticated session with GovBridge stores
+      const lowerUser = username.toLowerCase();
 
-        // Create authenticated officer user payload for the selected department
-        const officerUser = {
-          id: `off-${selectedDept.toLowerCase()}-01`,
-          email: `${selectedDept.toLowerCase()}.officer@govbridge.demo`,
-          role: "DEPARTMENT_OFFICER" as const,
-          full_name: `${deptInfo.shortName} Verification Officer`,
-          is_active: true,
-          department_id: selectedDept,
-          last_login: new Date().toISOString(),
-          created_at: new Date().toISOString(),
-        };
-
-        setAuth(officerUser, `token-${selectedDept}`);
-      } else if (portalType === "CITIZEN") {
+      if (lowerUser.includes("citizen") || lowerUser.includes("sunil")) {
         setActiveDepartment("ALL");
         const citizenUser = {
           id: "cit-101",
-          email: "citizen@govbridge.demo",
+          email: username,
           role: "CITIZEN" as const,
           full_name: "Sunil Patil",
           is_active: true,
@@ -62,11 +60,11 @@ export default function LoginPage() {
           created_at: new Date().toISOString(),
         };
         setAuth(citizenUser, "token-citizen");
-      } else if (portalType === "INTEGRATION_ADMIN") {
+      } else if (lowerUser.includes("admin")) {
         setActiveDepartment("ALL");
         const adminUser = {
           id: "adm-101",
-          email: "admin@govbridge.demo",
+          email: username,
           role: "INTEGRATION_ADMIN" as const,
           full_name: "State Interoperability Admin",
           is_active: true,
@@ -75,11 +73,11 @@ export default function LoginPage() {
           created_at: new Date().toISOString(),
         };
         setAuth(adminUser, "token-admin");
-      } else {
+      } else if (lowerUser.includes("auditor")) {
         setActiveDepartment("ALL");
         const auditorUser = {
           id: "aud-101",
-          email: "auditor@govbridge.demo",
+          email: username,
           role: "AUDITOR" as const,
           full_name: "DPDP Compliance Auditor",
           is_active: true,
@@ -88,329 +86,701 @@ export default function LoginPage() {
           created_at: new Date().toISOString(),
         };
         setAuth(auditorUser, "token-auditor");
+      } else {
+        // Department Officer (Default: MSRTC, UIDAI, CBDT, etc.)
+        let deptCode: DepartmentCode = "MSRTC";
+        if (lowerUser.includes("uidai")) deptCode = "UIDAI";
+        else if (lowerUser.includes("cbdt") || lowerUser.includes("tax")) deptCode = "CBDT";
+        else if (lowerUser.includes("eci") || lowerUser.includes("voter")) deptCode = "ECI";
+        else if (lowerUser.includes("edu")) deptCode = "EDU";
+        else if (lowerUser.includes("skill")) deptCode = "SKILL";
+        else if (lowerUser.includes("ulb") || lowerUser.includes("prop")) deptCode = "ULB";
+
+        setActiveDepartment(deptCode);
+        const deptInfo = DEPARTMENTS[deptCode];
+
+        const officerUser = {
+          id: `off-${deptCode.toLowerCase()}-01`,
+          email: username,
+          role: "DEPARTMENT_OFFICER" as const,
+          full_name: `${deptInfo?.shortName || "MSRTC"} Verification Officer`,
+          is_active: true,
+          department_id: deptCode,
+          last_login: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+        };
+        setAuth(officerUser, `token-${deptCode.toLowerCase()}`);
       }
 
       router.replace("/dashboard");
-    } catch (err: unknown) {
-      const axiosErr = err as { response?: { data?: { detail?: string } } };
-      setError(axiosErr?.response?.data?.detail || "Sign in failed. Please check your official credentials.");
+    } catch {
+      setError("Sign in failed. Please check your credentials.");
     } finally {
       setLoading(false);
     }
   };
 
-  const autofillOfficer = (code: DepartmentCode) => {
-    setPortalType("DEPARTMENT_OFFICER");
-    setSelectedDept(code);
-    const deptInfo = DEPARTMENTS[code];
-    setUsername(`${code.toLowerCase()}.officer@govbridge.demo`);
+  const autofillAccount = (
+    email: string,
+    dept: DepartmentCode = "MSRTC"
+  ) => {
+    setUsername(email);
     setPassword("officer123");
+    setError("");
+    setActiveDepartment(dept);
   };
 
   return (
     <div
       style={{
         minHeight: "100vh",
-        background: "linear-gradient(180deg, #f4f6f8 0%, #e2e8f0 100%)",
-        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif",
+        background: "linear-gradient(180deg, #f0f4f9 0%, #e8edf3 100%)",
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        justifyContent: "space-between",
-        padding: "24px 16px 16px",
+        justifyContent: "flex-start",
+        padding: "28px 16px 40px",
         boxSizing: "border-box",
       }}
     >
-      {/* ── Top Header Bar ── */}
+      {/* ── Top Bar (GovBridge Logo + Back Link) ── */}
       <div
         style={{
           width: "100%",
-          maxWidth: 540,
+          maxWidth: 520,
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
           marginBottom: 16,
+          padding: "0 4px",
         }}
       >
-        <Link href="/" style={{ textDecoration: "none" }}>
-          <div style={{ fontSize: 18, fontWeight: 900, color: "#003366" }}>GovBridge</div>
-          <div style={{ fontSize: 10, color: "#555555" }}>Government Interoperability Network</div>
+        <Link href="/" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
+          <img
+            src="/govbridge_logo_clean.png"
+            alt="GovBridge - Public Services Interoperability"
+            style={{ height: 38, width: "auto", display: "block" }}
+          />
         </Link>
         <Link
           href="/"
           style={{
-            fontSize: 12,
+            fontSize: 13,
             fontWeight: 700,
-            color: "#003366",
+            color: "#1d4ed8",
             textDecoration: "none",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 4,
           }}
         >
-          &larr; Back to Portal Home
+          <span>&larr;</span> Back to GovBridge
         </Link>
       </div>
 
-      {/* ── Main Government Login Card ── */}
+      {/* ── Main Meri Pehchaan Card ── */}
       <div
         style={{
           width: "100%",
-          maxWidth: 540,
+          maxWidth: 520,
           background: "#ffffff",
-          borderRadius: 4,
-          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-          border: "1px solid #cccccc",
+          borderRadius: 24,
+          boxShadow: "0 10px 35px -5px rgba(0, 0, 0, 0.07), 0 2px 6px rgba(0, 0, 0, 0.04)",
+          border: "1px solid #e2e8f0",
           overflow: "hidden",
+          position: "relative",
         }}
       >
-        {/* Top Header Bar */}
-        <div style={{ background: "#003366", color: "#ffffff", padding: "12px 20px", display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{ fontSize: 24 }}>🏛️</div>
-          <div>
-            <div style={{ fontSize: 14, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.02em" }}>
-              Government of Maharashtra
-            </div>
-            <div style={{ fontSize: 12, opacity: 0.9 }}>
-              GovBridge Official e-Governance Login Portal
-            </div>
-          </div>
+        {/* Tricolor Header Accent Top Stripes */}
+        <div
+          style={{
+            height: 4,
+            display: "flex",
+            justifyContent: "space-between",
+            width: "100%",
+          }}
+        >
+          <div
+            style={{
+              width: "44%",
+              height: 4,
+              background: "#ea580c",
+              borderTopLeftRadius: 24,
+            }}
+          />
+          <div
+            style={{
+              width: "44%",
+              height: 4,
+              background: "#16a34a",
+              borderTopRightRadius: 24,
+            }}
+          />
         </div>
 
-        <div style={{ padding: "24px 28px 20px" }}>
-          {/* Portal Type Selector Tabs */}
-          <div style={{ fontSize: 12, fontWeight: 700, color: "#003366", marginBottom: 6 }}>
-            Select Login Portal:
-          </div>
-          <div style={{ display: "flex", gap: 4, marginBottom: 20 }}>
-            <button
-              type="button"
-              onClick={() => {
-                setPortalType("DEPARTMENT_OFFICER");
-                setUsername("officer.msrtc@govbridge.demo");
-              }}
-              style={{
-                flex: 1,
-                padding: "8px",
-                fontSize: 12,
-                fontWeight: portalType === "DEPARTMENT_OFFICER" ? 800 : 600,
-                background: portalType === "DEPARTMENT_OFFICER" ? "#003366" : "#f0f4f8",
-                color: portalType === "DEPARTMENT_OFFICER" ? "#ffffff" : "#333333",
-                border: "1px solid #cccccc",
-                borderRadius: 2,
-                cursor: "pointer",
-              }}
-            >
-              Department Officer
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setPortalType("CITIZEN");
-                setUsername("citizen@govbridge.demo");
-              }}
-              style={{
-                flex: 1,
-                padding: "8px",
-                fontSize: 12,
-                fontWeight: portalType === "CITIZEN" ? 800 : 600,
-                background: portalType === "CITIZEN" ? "#003366" : "#f0f4f8",
-                color: portalType === "CITIZEN" ? "#ffffff" : "#333333",
-                border: "1px solid #cccccc",
-                borderRadius: 2,
-                cursor: "pointer",
-              }}
-            >
-              Citizen Login
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setPortalType("INTEGRATION_ADMIN");
-                setUsername("admin@govbridge.demo");
-              }}
-              style={{
-                flex: 1,
-                padding: "8px",
-                fontSize: 12,
-                fontWeight: portalType === "INTEGRATION_ADMIN" ? 800 : 600,
-                background: portalType === "INTEGRATION_ADMIN" ? "#003366" : "#f0f4f8",
-                color: portalType === "INTEGRATION_ADMIN" ? "#ffffff" : "#333333",
-                border: "1px solid #cccccc",
-                borderRadius: 2,
-                cursor: "pointer",
-              }}
-            >
-              System Admin
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setPortalType("AUDITOR");
-                setUsername("auditor@govbridge.demo");
-              }}
-              style={{
-                flex: 1,
-                padding: "8px",
-                fontSize: 12,
-                fontWeight: portalType === "AUDITOR" ? 800 : 600,
-                background: portalType === "AUDITOR" ? "#003366" : "#f0f4f8",
-                color: portalType === "AUDITOR" ? "#ffffff" : "#333333",
-                border: "1px solid #cccccc",
-                borderRadius: 2,
-                cursor: "pointer",
-              }}
-            >
-              Auditor
-            </button>
-          </div>
-
-          <form onSubmit={handleLogin}>
-            {/* If Department Officer, allow selecting specific department to log in */}
-            {portalType === "DEPARTMENT_OFFICER" && (
-              <div className="gov-form-group" style={{ marginBottom: 16 }}>
-                <label className="gov-form-label" style={{ color: "#003366" }}>
-                  Select Government Department *
-                </label>
-                <select
-                  className="gov-select"
-                  value={selectedDept}
-                  onChange={(e) => {
-                    const code = e.target.value as DepartmentCode;
-                    setSelectedDept(code);
-                    setUsername(`${code.toLowerCase()}.officer@govbridge.demo`);
+        {/* Card Body */}
+        <div style={{ padding: "30px 36px 28px" }}>
+          {/* Header Row: Ashoka Emblem + Government of India | Meri Pehchaan */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 16,
+              marginBottom: 16,
+            }}
+          >
+            {/* Left: Ashoka Emblem & Government of India */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <img
+                src="/ashoka_emblem_official_dark.png"
+                alt="Emblem of India"
+                style={{
+                  height: 46,
+                  width: "auto",
+                  objectFit: "contain",
+                  display: "block",
+                }}
+              />
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                <span
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 900,
+                    color: "#111827",
+                    lineHeight: 1.15,
                   }}
-                  style={{ padding: "8px 10px", fontSize: 13, border: "1px solid #003366", fontWeight: 700 }}
                 >
-                  <option value="MSRTC">MSRTC — State Transport Bus Depot Officer</option>
-                  <option value="UIDAI">UIDAI — Aadhaar E-KYC Verification Officer</option>
-                  <option value="CBDT">CBDT — Income Tax Assessment Officer</option>
-                  <option value="ECI">ECI — Election Commission Registration Officer</option>
-                  <option value="EDU">EDU — DigiLocker NAD Academic Registrar</option>
-                  <option value="SKILL">SKILL — MSDE Skill Certification &amp; DBT Officer</option>
-                  <option value="ULB">ULB — Municipal Property Tax Revenue Officer</option>
-                  <option value="ALL">ALL — State Interoperability Officer</option>
-                </select>
+                  भारत सरकार
+                </span>
+                <span
+                  style={{
+                    fontSize: 9,
+                    fontWeight: 800,
+                    color: "#374151",
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                    marginTop: 2,
+                  }}
+                >
+                  GOVERNMENT OF INDIA
+                </span>
               </div>
-            )}
+            </div>
 
-            <div className="gov-form-group">
-              <label className="gov-form-label">
-                Official User ID / Email Address *
+            {/* Vertical Divider */}
+            <div
+              style={{
+                width: 1.5,
+                height: 38,
+                background: "#d1d5db",
+              }}
+            />
+
+            {/* Right: Meri Pehchaan Logo */}
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <div
+                style={{
+                  fontSize: 22,
+                  fontWeight: 900,
+                  lineHeight: 1.1,
+                  letterSpacing: "-0.01em",
+                }}
+              >
+                <span style={{ color: "#ea580c" }}>Meri </span>
+                <span style={{ color: "#16a34a" }}>Pehchaan</span>
+              </div>
+              <span
+                style={{
+                  fontSize: 9,
+                  fontWeight: 800,
+                  color: "#1f2937",
+                  letterSpacing: "0.12em",
+                  textTransform: "uppercase",
+                  marginTop: 2,
+                }}
+              >
+                SINGLE SIGN-ON SERVICE
+              </span>
+            </div>
+          </div>
+
+          {/* SSO Service Provider Tabs: DigiLocker | JAN PARICHAY | e-Pramaan */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: 8,
+              marginBottom: 20,
+            }}
+          >
+            {(["DigiLocker", "JAN PARICHAY", "e-Pramaan"] as const).map((provider) => {
+              const active = ssoProvider === provider;
+              return (
+                <button
+                  key={provider}
+                  type="button"
+                  onClick={() => setSsoProvider(provider)}
+                  style={{
+                    padding: "5px 14px",
+                    borderRadius: 6,
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    border: "none",
+                    background: active ? "#e0edff" : "#f1f5f9",
+                    color: active ? "#1d4ed8" : "#64748b",
+                    transition: "all 0.15s ease",
+                  }}
+                >
+                  {provider}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Sign In Header */}
+          <div style={{ textAlign: "center", marginBottom: 18 }}>
+            <h2
+              style={{
+                fontSize: 19,
+                fontWeight: 800,
+                color: "#111827",
+                margin: "0 0 4px",
+              }}
+            >
+              Sign In to your account via{" "}
+              <span style={{ color: "#1d4ed8", fontWeight: 800 }}>{ssoProvider}</span>
+            </h2>
+            <p
+              style={{
+                fontSize: 12.5,
+                color: "#6b7280",
+                margin: 0,
+              }}
+            >
+              National Public Services Interoperability Portal
+            </p>
+          </div>
+
+          {/* Auth Method Switcher: Mobile | Username | Aadhaar / PAN */}
+          <div
+            style={{
+              background: "#f1f5f9",
+              borderRadius: 10,
+              padding: 4,
+              display: "flex",
+              marginBottom: 20,
+            }}
+          >
+            {(["Mobile", "Username", "Aadhaar / PAN"] as const).map((method) => {
+              const active = authMethod === method;
+              return (
+                <button
+                  key={method}
+                  type="button"
+                  onClick={() => {
+                    setAuthMethod(method);
+                    if (method === "Mobile") setUsername("9820123456");
+                    else if (method === "Aadhaar / PAN") setUsername("2341 5678 9012");
+                    else setUsername("officer@govbridge.demo");
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: "8px 0",
+                    textAlign: "center",
+                    fontSize: 13,
+                    fontWeight: active ? 700 : 600,
+                    borderRadius: active ? 8 : 0,
+                    border: "none",
+                    background: active ? "#2563eb" : "transparent",
+                    color: active ? "#ffffff" : "#4b5563",
+                    cursor: "pointer",
+                    boxShadow: active ? "0 2px 6px rgba(37, 99, 235, 0.25)" : "none",
+                    transition: "all 0.15s ease",
+                  }}
+                >
+                  {method}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleLogin}>
+            {/* Username / Identifier Input */}
+            <div style={{ marginBottom: 16 }}>
+              <label
+                style={{
+                  display: "block",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "#374151",
+                  marginBottom: 6,
+                }}
+              >
+                {authMethod === "Mobile"
+                  ? "Mobile Number *"
+                  : authMethod === "Aadhaar / PAN"
+                  ? "Aadhaar or PAN Number *"
+                  : "Username or Official Email *"}
               </label>
               <input
                 type="text"
-                className="gov-input"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter official credentials..."
+                placeholder={
+                  authMethod === "Mobile"
+                    ? "Enter 10-digit mobile number..."
+                    : authMethod === "Aadhaar / PAN"
+                    ? "Enter 12-digit Aadhaar / 10-digit PAN..."
+                    : "officer@govbridge.demo"
+                }
                 required
+                style={{
+                  width: "100%",
+                  padding: "11px 14px",
+                  fontSize: 14,
+                  borderRadius: 8,
+                  border: "1px solid #d1d5db",
+                  outline: "none",
+                  boxSizing: "border-box",
+                  color: "#111827",
+                  background: "#ffffff",
+                  fontFamily: "inherit",
+                }}
               />
             </div>
 
-            <div className="gov-form-group">
-              <label className="gov-form-label">
-                Password / Security PIN *
-              </label>
+            {/* Password Input */}
+            <div style={{ marginBottom: 14 }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: 6,
+                }}
+              >
+                <label
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: "#374151",
+                  }}
+                >
+                  Password *
+                </label>
+                <button
+                  type="button"
+                  onClick={() => alert("Password reset link has been dispatched to official email.")}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    padding: 0,
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: "#1d4ed8",
+                    cursor: "pointer",
+                  }}
+                >
+                  Forgot password?
+                </button>
+              </div>
+
               <div style={{ position: "relative" }}>
                 <input
                   type={showPassword ? "text" : "password"}
-                  className="gov-input"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter password..."
+                  placeholder="••••••••••"
                   required
+                  style={{
+                    width: "100%",
+                    padding: "11px 40px 11px 14px",
+                    fontSize: 14,
+                    borderRadius: 8,
+                    border: "1px solid #d1d5db",
+                    outline: "none",
+                    boxSizing: "border-box",
+                    color: "#111827",
+                    background: "#ffffff",
+                    fontFamily: "inherit",
+                  }}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
+                  aria-label="Toggle password visibility"
                   style={{
                     position: "absolute",
-                    right: 8,
+                    right: 12,
                     top: "50%",
                     transform: "translateY(-50%)",
                     background: "none",
                     border: "none",
+                    padding: 4,
                     cursor: "pointer",
-                    fontSize: 12,
-                    color: "#555555",
+                    color: "#6b7280",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
                 >
-                  {showPassword ? "Hide" : "Show"}
+                  {showPassword ? (
+                    // Eye slash icon
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                      <line x1="1" y1="1" x2="23" y2="23" />
+                    </svg>
+                  ) : (
+                    // Eye icon
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  )}
                 </button>
               </div>
             </div>
 
-            <div style={{ margin: "14px 0 16px" }}>
-              <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, cursor: "pointer" }}>
+            {/* Checkbox 1: PIN-less / OTP Biometric authentication */}
+            <div style={{ marginBottom: 8 }}>
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  fontSize: 12,
+                  color: "#64748b",
+                  cursor: "pointer",
+                  userSelect: "none",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={pinlessAuth}
+                  onChange={(e) => setPinlessAuth(e.target.checked)}
+                  style={{
+                    width: 15,
+                    height: 15,
+                    accentColor: "#2563eb",
+                    cursor: "pointer",
+                  }}
+                />
+                <span>PIN-less / OTP Biometric authentication</span>
+              </label>
+            </div>
+
+            {/* Checkbox 2: Terms of Use Consent */}
+            <div style={{ marginBottom: 16 }}>
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  fontSize: 12,
+                  color: "#374151",
+                  cursor: "pointer",
+                  userSelect: "none",
+                }}
+              >
                 <input
                   type="checkbox"
                   checked={consentTerms}
                   onChange={(e) => setConsentTerms(e.target.checked)}
+                  style={{
+                    width: 15,
+                    height: 15,
+                    accentColor: "#2563eb",
+                    cursor: "pointer",
+                  }}
                 />
-                <span>I confirm that I am authorized to access government e-services under DPDP Act 2023.</span>
+                <span>
+                  I consent to{" "}
+                  <Link
+                    href="/terms"
+                    target="_blank"
+                    style={{ color: "#1d4ed8", fontWeight: 700, textDecoration: "none" }}
+                  >
+                    terms of use.
+                  </Link>
+                </span>
               </label>
             </div>
 
+            {/* Error Message Alert */}
             {error && (
-              <div style={{ padding: 8, background: "#f8d7da", border: "1px solid #f5c6cb", color: "#721c24", fontSize: 12, marginBottom: 14 }}>
-                {error}
+              <div
+                style={{
+                  padding: "10px 14px",
+                  background: "#fef2f2",
+                  border: "1px solid #fecaca",
+                  borderRadius: 8,
+                  color: "#b91c1c",
+                  fontSize: 12.5,
+                  marginBottom: 16,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+              >
+                <span>⚠️</span>
+                <span>{error}</span>
               </div>
             )}
 
+            {/* Big Green Sign In Button */}
             <button
               type="submit"
               disabled={loading}
-              className="gov-btn"
-              style={{ width: "100%", padding: "10px", fontSize: 14, fontWeight: 800 }}
+              style={{
+                width: "100%",
+                padding: "13px",
+                fontSize: 15,
+                fontWeight: 700,
+                color: "#ffffff",
+                background: loading ? "#15803d" : "#16a34a",
+                border: "none",
+                borderRadius: 8,
+                cursor: loading ? "not-allowed" : "pointer",
+                boxShadow: "0 2px 4px rgba(22, 163, 74, 0.2)",
+                transition: "background 0.15s ease",
+              }}
             >
-              {loading ? "Authenticating Official Session..." : `Sign In to ${portalType === "DEPARTMENT_OFFICER" ? DEPARTMENTS[selectedDept].shortName : portalType}`}
+              {loading ? "Signing In..." : "Sign In"}
             </button>
           </form>
 
-          {/* Quick Department Officer Accounts Presets - ONLY visible for Department Officer Login */}
-          {portalType === "DEPARTMENT_OFFICER" && (
-            <div style={{ marginTop: 20, paddingTop: 16, borderTop: "1px solid #e0e0e0" }}>
-              <div style={{ fontSize: 11, fontWeight: 800, color: "#003366", marginBottom: 8 }}>
-                ⚡ Select Specific Department Officer Login (1-Click Authenticated Session):
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-                {(["MSRTC", "UIDAI", "CBDT", "ECI", "EDU", "SKILL", "ULB"] as DepartmentCode[]).map((code) => {
-                  const dept = DEPARTMENTS[code];
-                  return (
-                    <button
-                      key={code}
-                      type="button"
-                      onClick={() => autofillOfficer(code)}
-                      style={{
-                        padding: "6px 8px",
-                        background: selectedDept === code ? "#e6f0fa" : "#ffffff",
-                        border: `1px solid ${selectedDept === code ? "#003366" : "#cccccc"}`,
-                        borderRadius: 2,
-                        textAlign: "left",
-                        cursor: "pointer",
-                        fontSize: 11,
-                      }}
-                    >
-                      <div style={{ fontWeight: 800, color: "#003366" }}>
-                        {dept.sealEmoji} {dept.shortName}
-                      </div>
-                      <div style={{ fontSize: 10, color: "#666666" }}>
-                        {code.toLowerCase()}.officer@govbridge.demo
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+          {/* New User Sign Up */}
+          <div
+            style={{
+              textAlign: "center",
+              fontSize: 12.5,
+              color: "#4b5563",
+              margin: "18px 0 16px",
+            }}
+          >
+            New user?{" "}
+            <Link
+              href="/accessibility"
+              style={{
+                color: "#1d4ed8",
+                fontWeight: 700,
+                textDecoration: "none",
+              }}
+            >
+              Sign up for Meri Pehchaan
+            </Link>
+          </div>
+
+          {/* ── Evaluator Demo Login Accounts ── */}
+          <div
+            style={{
+              borderTop: "1px solid #eef2f6",
+              paddingTop: 14,
+              marginTop: 4,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 10,
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: "#16a34a",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4,
+                }}
+              >
+                <span>⚡</span> Evaluator Demo Login Accounts:
+              </span>
+              <span style={{ fontSize: 11, color: "#94a3b8" }}>Click to autofill</span>
             </div>
-          )}
+
+            {/* Quick Autofill Buttons Grid */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(2, 1fr)",
+                gap: 8,
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => autofillAccount("officer.msrtc@govbridge.demo", "MSRTC")}
+                style={{
+                  padding: "8px 10px",
+                  borderRadius: 6,
+                  border: username.includes("msrtc") ? "1.5px solid #16a34a" : "1px solid #e2e8f0",
+                  background: username.includes("msrtc") ? "#f0fdf4" : "#f8fafc",
+                  textAlign: "left",
+                  cursor: "pointer",
+                }}
+              >
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#0f172a" }}>🚌 Bus Pass Officer (MSRTC)</div>
+                <div style={{ fontSize: 10, color: "#64748b" }}>officer.msrtc@govbridge.demo</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => autofillAccount("uidai.officer@govbridge.demo", "UIDAI")}
+                style={{
+                  padding: "8px 10px",
+                  borderRadius: 6,
+                  border: username.includes("uidai") ? "1.5px solid #16a34a" : "1px solid #e2e8f0",
+                  background: username.includes("uidai") ? "#f0fdf4" : "#f8fafc",
+                  textAlign: "left",
+                  cursor: "pointer",
+                }}
+              >
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#0f172a" }}>🆔 UIDAI E-KYC Officer</div>
+                <div style={{ fontSize: 10, color: "#64748b" }}>uidai.officer@govbridge.demo</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => autofillAccount("cbdt.officer@govbridge.demo", "CBDT")}
+                style={{
+                  padding: "8px 10px",
+                  borderRadius: 6,
+                  border: username.includes("cbdt") ? "1.5px solid #16a34a" : "1px solid #e2e8f0",
+                  background: username.includes("cbdt") ? "#f0fdf4" : "#f8fafc",
+                  textAlign: "left",
+                  cursor: "pointer",
+                }}
+              >
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#0f172a" }}>💳 Income Tax (CBDT)</div>
+                <div style={{ fontSize: 10, color: "#64748b" }}>cbdt.officer@govbridge.demo</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => autofillAccount("citizen@govbridge.demo", "ALL")}
+                style={{
+                  padding: "8px 10px",
+                  borderRadius: 6,
+                  border: username.includes("citizen") ? "1.5px solid #16a34a" : "1px solid #e2e8f0",
+                  background: username.includes("citizen") ? "#f0fdf4" : "#f8fafc",
+                  textAlign: "left",
+                  cursor: "pointer",
+                }}
+              >
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#0f172a" }}>👤 Citizen: Sunil Patil</div>
+                <div style={{ fontSize: 10, color: "#64748b" }}>citizen@govbridge.demo</div>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-
-      {/* Footer */}
-      <footer style={{ textAlign: "center", fontSize: 11, color: "#555555", margin: "16px 0 8px" }}>
-        DPDP Act 2023 Compliant • Government of Maharashtra e-Governance Gateway
-      </footer>
     </div>
   );
 }
