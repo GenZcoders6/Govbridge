@@ -90,6 +90,7 @@ export interface Application {
   status: ApplicationStatus;
   title: string | null;
   current_step: number;
+  form_data?: Record<string, unknown>;
   submitted_at: string | null;
   resolved_at: string | null;
   created_at: string;

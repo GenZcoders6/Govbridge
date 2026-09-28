@@ -53,9 +53,9 @@ export default function IdentityPage() {
     <AppShell title="Master Identity" subtitle="Cross-Department Identity Resolution & Federation">
       <div className="page-header">
         <div className="page-header-left">
-          <h1 className="page-header-title">Master Identity Registry</h1>
+          <h1 className="page-header-title">Federated Citizen Identity</h1>
           <p className="page-header-subtitle">
-            Federated citizen identity — single truth mapped across all government department registries
+            Federated citizen identity — Links verified records from participating government authorities without replacing source data.
           </p>
         </div>
         <form onSubmit={handleSearch} style={{ display: "flex", gap: 8 }}>
@@ -216,12 +216,12 @@ export default function IdentityPage() {
           <div className="card">
             <div className="card-header">
               <div>
-                <div className="card-title">Connected Department Identifiers</div>
+                <div className="card-title">Verified Government Records</div>
                 <div className="card-subtitle">
-                  Cross-registry identity resolution — {mappings.length} department systems linked
+                  Federated cross-registry identity records — {mappings.length} department authorities connected
                 </div>
               </div>
-              <span className="badge badge-success"><span className="badge-dot" />{mappings.length} Active</span>
+              <span className="badge badge-success"><span className="badge-dot" />{mappings.length} Verified Records</span>
             </div>
 
             {mappings.length === 0 ? (

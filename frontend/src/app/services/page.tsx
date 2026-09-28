@@ -1,234 +1,228 @@
 "use client";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
 
 interface ServiceItem {
-  id: string;
-  title: string;
+  code: string;
+  name: string;
   department: string;
-  category: string;
-  description: string;
+  type: string;
+  status: "Active" | "Maintenance" | "Sandbox";
   sla: string;
-  protocol: string;
-  icon: string;
   href: string;
-  docs: string[];
-  badge: string;
 }
 
 const SERVICES: ServiceItem[] = [
   {
-    id: "aadhaar-kyc",
-    title: "UIDAI Aadhaar E-KYC Service",
+    code: "UIDAI-KYC-001",
+    name: "Aadhaar e-KYC Authentication Service",
     department: "Unique Identification Authority of India (UIDAI)",
-    category: "Identity & Verification",
-    description: "Instant biometric and OTP-based demographic identity verification across official government registries.",
-    sla: "Instant (Real-time API)",
-    protocol: "REST / JSON API",
-    icon: "🪪",
-    href: "/services/aadhaar-kyc",
-    docs: ["Aadhaar Number (12 Digits)", "Registered Mobile Number"],
-    badge: "Essential Identity",
+    type: "Identity Verification",
+    status: "Active",
+    sla: "Instant",
+    href: "/services/specifications",
   },
   {
-    id: "pan-verification",
-    title: "PAN Card & Income Verification Portal",
-    department: "Income Tax Department / Central Board of Direct Taxes",
-    category: "Revenue & Taxation",
-    description: "Verify Permanent Account Number (PAN) validity and tax-assessed income eligibility for government benefits.",
-    sla: "5 Minutes (Automated Check)",
-    protocol: "Direct Database Adapter",
-    icon: "₹",
-    href: "/services/pan-verification",
-    docs: ["PAN Number (10 Alphanumeric)", "Financial Year Assessment"],
-    badge: "Financial Status",
+    code: "CBDT-PAN-002",
+    name: "PAN & Income Verification Portal",
+    department: "Income Tax Department / CBDT",
+    type: "Financial Verification",
+    status: "Active",
+    sla: "5 Minutes",
+    href: "/services/specifications",
   },
   {
-    id: "voter-id",
-    title: "Electoral Roll & Voter ID Validation",
+    code: "ECI-VOTER-003",
+    name: "Electoral Roll & EPIC Validation",
     department: "Election Commission of India (ECI)",
-    category: "Citizenship & Electoral",
-    description: "Verify voter identity card details, electoral constituency registration, and polling station location.",
-    sla: "Instant (Real-time Sync)",
-    protocol: "REST / JSON API",
-    icon: "🗳️",
-    href: "/services/voter-id",
-    docs: ["EPIC Voter ID Number", "State & Assembly District"],
-    badge: "Civic Registry",
+    type: "Civic Verification",
+    status: "Active",
+    sla: "Instant",
+    href: "/services/specifications",
   },
   {
-    id: "bus-pass",
-    title: "Student & Senior Citizen Concession Bus Pass",
-    department: "State Road Transport Corporation (MSRTC)",
-    category: "Public Transport",
-    description: "Apply for subsidized monthly transit bus passes with automatic school/college enrollment & age verification.",
-    sla: "24 Hours (1 Business Day)",
-    protocol: "Multi-Registry API (Education + Transport)",
-    icon: "🚌",
-    href: "/services/bus-pass",
-    docs: ["Aadhaar / ID Card", "Bonafide Student Certificate / Age Proof"],
-    badge: "Public Transport",
+    code: "TRANS-BUSPASS-004",
+    name: "Student & Senior Citizen Bus Concession Pass",
+    department: "State Transport Department (MSRTC)",
+    type: "Transit Scheme",
+    status: "Active",
+    sla: "24 Hours",
+    href: "/services/specifications",
   },
   {
-    id: "education-degree",
-    title: "University Degree & Marksheet Verification",
-    department: "Higher & Technical Education Department",
-    category: "Education & Academics",
-    description: "Cross-verify university degrees, diploma certificates, and academic marksheets directly from state university servers.",
-    sla: "12 Hours (Database Sync)",
-    protocol: "REST / JSON API",
-    icon: "🎓",
-    href: "/services/education-degree",
-    docs: ["PRN / Enrollment Number", "University Name & Passing Year"],
-    badge: "Academic Credential",
+    code: "EDU-NAD-005",
+    name: "University Degree & Marksheet Verification",
+    department: "DigiLocker National Academic Depository",
+    type: "Academic Credential",
+    status: "Active",
+    sla: "12 Hours",
+    href: "/services/specifications",
   },
   {
-    id: "skill-employment",
-    title: "Unified Skill Benefit & Apprenticeship Allowance",
-    department: "Department of Skill Development & Employment",
-    category: "Skill & Employment",
-    description: "Integrated application for NSQF skill certification verification, employment exchange status, and monthly stipend disbursement.",
-    sla: "48 Hours (2 Business Days)",
-    protocol: "SOAP / XML + REST Adapter",
-    icon: "⚡",
-    href: "/services/skill-employment",
-    docs: ["Skill Certificate Number", "Employment Registration ID", "Bank Account Details"],
-    badge: "DBT Allowance",
+    code: "SKILL-DBT-006",
+    name: "Unified Skill Benefit & Stipend Allowance",
+    department: "Ministry of Skill Development & PFMS",
+    type: "DBT Allowance",
+    status: "Sandbox",
+    sla: "48 Hours",
+    href: "/services/specifications",
   },
   {
-    id: "property-noc",
-    title: "Municipal Property Tax & Utility Clearance NOC",
-    department: "Urban Local Body / Municipal Corporation",
-    category: "Urban Local Governance",
-    description: "Obtain no-dues certificate for property taxes, water charges, and civic utility assessments for municipal services.",
-    sla: "72 Hours (3 Business Days)",
-    protocol: "Direct Database Query",
-    icon: "🏛️",
-    href: "/services/property-noc",
-    docs: ["Property Assessment ID", "Latest Utility Bill Receipt"],
-    badge: "Civic Clearance",
+    code: "ULB-NOC-007",
+    name: "Municipal Property Tax & Utility Clearance NOC",
+    department: "Urban Local Body (ULB / Municipal Corp)",
+    type: "Municipal NOC",
+    status: "Active",
+    sla: "72 Hours",
+    href: "/services/specifications",
   },
 ];
 
 export default function ServicesPage() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedDept, setSelectedDept] = useState("ALL");
+  const [selectedCategory, setSelectedCategory] = useState("ALL");
+  const [selectedStatus, setSelectedStatus] = useState("ALL");
+
+  const filteredServices = useMemo(() => {
+    return SERVICES.filter((s) => {
+      const matchesSearch =
+        !searchQuery ||
+        s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.department.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesDept = selectedDept === "ALL" || s.department.includes(selectedDept);
+      const matchesCat = selectedCategory === "ALL" || s.type === selectedCategory;
+      const matchesStatus = selectedStatus === "ALL" || s.status === selectedStatus;
+
+      return matchesSearch && matchesDept && matchesCat && matchesStatus;
+    });
+  }, [searchQuery, selectedDept, selectedCategory, selectedStatus]);
+
+  const handleReset = () => {
+    setSearchQuery("");
+    setSelectedDept("ALL");
+    setSelectedCategory("ALL");
+    setSelectedStatus("ALL");
+  };
+
   return (
-    <AppShell title="Departmental Services Catalogue" subtitle="Official Government e-Services Portal">
-      {/* Header Banner */}
-      <div className="page-header" style={{ marginBottom: 24 }}>
+    <AppShell title="Departmental Services" breadcrumb={["Home", "Department Officer", "Departmental Services"]}>
+      <div className="gov-page-header">
         <div>
-          <div style={{ fontSize: 12, color: "#64748b", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-            State e-Governance Services Portal
-          </div>
-          <h1 className="page-header-title" style={{ fontSize: 26, fontWeight: 800, marginTop: 4 }}>
-            Departmental Services Catalogue
-          </h1>
-          <p className="page-header-subtitle">
-            Apply directly for official government certificates, concession passes, and verified benefit schemes powered by GovBridge API Interoperability.
-          </p>
+          <h1 className="gov-page-title">Departmental Services</h1>
+          <div className="gov-page-subtitle">Official Directory of Interoperable e-Governance API Services &amp; Schemes</div>
         </div>
       </div>
 
-      {/* Grid of Services */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 20 }}>
-        {SERVICES.map((s) => (
-          <div
-            key={s.id}
-            className="card"
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-              borderRadius: 14,
-              border: "1px solid #e2e8f0",
-              transition: "all 0.2s ease",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.transform = "translateY(-3px)";
-              (e.currentTarget as HTMLElement).style.boxShadow = "0 10px 25px -5px rgba(0, 0, 0, 0.08)";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.transform = "";
-              (e.currentTarget as HTMLElement).style.boxShadow = "";
-            }}
-          >
-            <div className="card-body" style={{ padding: 20 }}>
-              {/* Header Icon + Badge */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
-                <div
-                  style={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: 12,
-                    background: "#eff6ff",
-                    border: "1px solid #bfdbfe",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 24,
-                  }}
-                >
-                  {s.icon}
-                </div>
-                <span className="badge badge-info" style={{ fontSize: 11, fontWeight: 600 }}>
-                  {s.badge}
-                </span>
-              </div>
-
-              {/* Title & Department */}
-              <h3 style={{ fontSize: 16, fontWeight: 700, color: "#0f172a", marginBottom: 4, lineHeight: 1.3 }}>
-                {s.title}
-              </h3>
-              <div style={{ fontSize: 11, color: "#2563eb", fontWeight: 600, marginBottom: 10 }}>
-                {s.department}
-              </div>
-
-              {/* Description */}
-              <p style={{ fontSize: 13, color: "#475569", lineHeight: 1.5, marginBottom: 16 }}>
-                {s.description}
-              </p>
-
-              {/* Metadata: SLA & Protocol */}
-              <div style={{ background: "#f8fafc", padding: 12, borderRadius: 8, border: "1px solid #f1f5f9", fontSize: 12 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                  <span style={{ color: "#64748b" }}>Turnaround SLA:</span>
-                  <span style={{ fontWeight: 700, color: "#16a34a" }}>{s.sla}</span>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <span style={{ color: "#64748b" }}>Connector Protocol:</span>
-                  <span style={{ fontWeight: 600, fontFamily: "monospace", color: "#475569", fontSize: 11 }}>{s.protocol}</span>
-                </div>
-              </div>
-
-              {/* Required Documents */}
-              <div style={{ marginTop: 14 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 6 }}>
-                  Required Information:
-                </div>
-                <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12, color: "#475569" }}>
-                  {s.docs.map((doc, idx) => (
-                    <li key={idx} style={{ marginBottom: 2 }}>{doc}</li>
-                  ))}
-                </ul>
-              </div>
+      {/* Government Filter Form */}
+      <div className="gov-panel">
+        <div className="gov-panel-header-secondary">
+          SEARCH &amp; FILTER SERVICES
+        </div>
+        <div className="gov-panel-body">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12 }}>
+            <div className="gov-form-group" style={{ margin: 0 }}>
+              <label className="gov-form-label">Search Service:</label>
+              <input
+                type="text"
+                className="gov-input"
+                placeholder="Enter service code or name..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
 
-            {/* Action Footer */}
-            <div
-              style={{
-                padding: "14px 20px",
-                background: "#fafafa",
-                borderTop: "1px solid #f1f5f9",
-                borderRadius: "0 0 14px 14px",
-                display: "flex",
-                justifyContent: "flex-end",
-              }}
-            >
-              <Link href={s.href} className="btn btn-primary btn-sm" style={{ padding: "8px 16px" }}>
-                Apply for Service →
-              </Link>
+            <div className="gov-form-group" style={{ margin: 0 }}>
+              <label className="gov-form-label">Department:</label>
+              <select className="gov-select" value={selectedDept} onChange={(e) => setSelectedDept(e.target.value)}>
+                <option value="ALL">All Departments</option>
+                <option value="UIDAI">UIDAI</option>
+                <option value="Income Tax">Income Tax / CBDT</option>
+                <option value="Election">Election Commission</option>
+                <option value="Transport">State Transport</option>
+                <option value="DigiLocker">DigiLocker NAD</option>
+                <option value="Skill">Skill Development</option>
+                <option value="Urban">Urban Local Body</option>
+              </select>
+            </div>
+
+            <div className="gov-form-group" style={{ margin: 0 }}>
+              <label className="gov-form-label">Service Category:</label>
+              <select className="gov-select" value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
+                <option value="ALL">All Categories</option>
+                <option value="Identity Verification">Identity Verification</option>
+                <option value="Financial Verification">Financial Verification</option>
+                <option value="Civic Verification">Civic Verification</option>
+                <option value="Transit Scheme">Transit Scheme</option>
+                <option value="Academic Credential">Academic Credential</option>
+                <option value="DBT Allowance">DBT Allowance</option>
+                <option value="Municipal NOC">Municipal NOC</option>
+              </select>
+            </div>
+
+            <div className="gov-form-group" style={{ margin: 0 }}>
+              <label className="gov-form-label">Status:</label>
+              <select className="gov-select" value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)}>
+                <option value="ALL">All Statuses</option>
+                <option value="Active">Active</option>
+                <option value="Sandbox">Sandbox</option>
+                <option value="Maintenance">Maintenance</option>
+              </select>
             </div>
           </div>
-        ))}
+
+          <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
+            <button className="gov-btn" onClick={() => {}}>Search</button>
+            <button className="gov-btn gov-btn-secondary" onClick={handleReset}>Reset</button>
+          </div>
+        </div>
+      </div>
+
+      {/* Services Government Table */}
+      <div className="gov-panel">
+        <div className="gov-panel-header">
+          <span>Service Directory Catalogue</span>
+          <span style={{ fontSize: 11, fontWeight: 400 }}>Showing {filteredServices.length} registered services</span>
+        </div>
+        <div className="gov-panel-body" style={{ padding: 0 }}>
+          <table className="gov-table">
+            <thead>
+              <tr>
+                <th>Service Code</th>
+                <th>Service Name</th>
+                <th>Department</th>
+                <th>Service Type</th>
+                <th>Status</th>
+                <th>SLA</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredServices.map((s) => (
+                <tr key={s.code}>
+                  <td><strong>{s.code}</strong></td>
+                  <td>{s.name}</td>
+                  <td>{s.department}</td>
+                  <td>{s.type}</td>
+                  <td>
+                    <span className={`gov-badge ${s.status === "Active" ? "gov-badge-success" : "gov-badge-warning"}`}>
+                      {s.status}
+                    </span>
+                  </td>
+                  <td>{s.sla}</td>
+                  <td>
+                    <Link href={s.href} className="gov-btn gov-btn-sm">
+                      View Details
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </AppShell>
   );

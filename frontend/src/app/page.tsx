@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
+import { authApi } from "@/lib/api";
 import { AshokaEmblemLogo, MySchemeLogo, GovBridgeLogo, DigitalIndiaLogo, IndiaGovInHeroLogo, UsefulLinkLogo } from "@/components/GovLogos";
 
 // ── 10 Scheduled Indian Languages Dictionary ──
@@ -1303,20 +1304,33 @@ export default function Home() {
 
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <span style={{ fontSize: 11, color: "#94a3b8" }}>{s.state}</span>
-                  <Link
-                    href={s.href}
+                  <button
+                    onClick={async () => {
+                      if (!user) {
+                        try {
+                          const res = await authApi.login("citizen@govbridge.demo", "citizen123");
+                          setAuth(res.data.user, res.data.access_token);
+                        } catch {
+                          setAuth({ id: "1", email: "citizen@govbridge.demo", role: "CITIZEN", full_name: "Sunil Patil", is_active: true, department_id: null, last_login: null, created_at: new Date().toISOString() }, "token");
+                        }
+                      }
+                      router.push(s.href);
+                    }}
                     style={{
-                      padding: "7px 16px",
-                      background: "#15803d",
+                      padding: "8px 18px",
+                      background: "linear-gradient(135deg, #15803d 0%, #16a34a 100%)",
                       color: "#ffffff",
                       borderRadius: 6,
                       fontSize: 12,
                       fontWeight: 800,
-                      textDecoration: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      boxShadow: "0 2px 6px rgba(22, 163, 74, 0.3)",
+                      transition: "all 0.15s ease",
                     }}
                   >
                     Apply Now →
-                  </Link>
+                  </button>
                 </div>
               </div>
             ))}
