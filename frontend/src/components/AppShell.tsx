@@ -14,9 +14,17 @@ interface AppShellProps {
   subtitle?: string;
   requiredRoles?: string[];
   breadcrumb?: string[];
+  requireAuth?: boolean;
 }
 
-export function AppShell({ children, title, subtitle, requiredRoles, breadcrumb }: AppShellProps) {
+export function AppShell({
+  children,
+  title,
+  subtitle,
+  requiredRoles,
+  breadcrumb,
+  requireAuth = true,
+}: AppShellProps) {
   const { isAuthenticated, user, hasHydrated } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
@@ -24,16 +32,16 @@ export function AppShell({ children, title, subtitle, requiredRoles, breadcrumb 
   useEffect(() => {
     if (!hasHydrated) return;
 
-    if (!isAuthenticated) {
+    if (requireAuth && !isAuthenticated) {
       router.replace("/login");
       return;
     }
     if (requiredRoles && user && !requiredRoles.includes(user.role)) {
       router.replace("/dashboard");
     }
-  }, [isAuthenticated, user, requiredRoles, router, hasHydrated]);
+  }, [isAuthenticated, user, requiredRoles, router, hasHydrated, requireAuth]);
 
-  if (!hasHydrated || !isAuthenticated) {
+  if (!hasHydrated || (requireAuth && !isAuthenticated)) {
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: "#f4f6f8" }}>
         <div style={{ fontSize: 13, color: "#003366", fontWeight: 700 }}>Loading Government Portal Session...</div>
@@ -47,7 +55,7 @@ export function AppShell({ children, title, subtitle, requiredRoles, breadcrumb 
     ? breadcrumb.map((b) => (b === "Department Officer" && isCitizen ? "Citizen Portal" : b))
     : [
         "Home",
-        isCitizen ? "Citizen Portal" : "Department Officer",
+        user ? (isCitizen ? "Citizen Portal" : "Department Officer") : "Public Portal",
         title,
       ];
 
@@ -70,7 +78,7 @@ export function AppShell({ children, title, subtitle, requiredRoles, breadcrumb 
               {defaultBreadcrumbs.map((b, idx) => (
                 <span key={idx} style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
                   {idx === 0 ? (
-                    <Link href="/dashboard" style={{ color: "#2563eb", fontWeight: 600 }}>🏠 {b}</Link>
+                    <Link href={user ? "/dashboard" : "/"} style={{ color: "#2563eb", fontWeight: 600 }}>🏠 {b}</Link>
                   ) : idx === defaultBreadcrumbs.length - 1 ? (
                     <strong style={{ color: "#0f172a", fontWeight: 800 }}>{b}</strong>
                   ) : (
@@ -85,14 +93,20 @@ export function AppShell({ children, title, subtitle, requiredRoles, breadcrumb 
             <div
               className="gov-notice-banner"
               style={
-                isCitizen
+                !user
+                  ? { background: "#eff6ff", borderColor: "#bfdbfe", color: "#1e40af" }
+                  : isCitizen
                   ? { background: "#f0fdf4", borderColor: "#86efac", color: "#166534" }
                   : {}
               }
             >
-              <span style={{ fontSize: 16 }}>{isCitizen ? "🛡️" : "ℹ️"}</span>
+              <span style={{ fontSize: 16 }}>{!user ? "🏛️" : isCitizen ? "🛡️" : "ℹ️"}</span>
               <span>
-                {isCitizen ? (
+                {!user ? (
+                  <>
+                    <strong>Official Public Information Portal:</strong> All state service directories, interoperability guidelines, and DPDP Act 2023 compliance notices are open for citizen access.
+                  </>
+                ) : isCitizen ? (
                   <>
                     <strong>DPDP Protected Citizen Portal:</strong> All your personal data exchanges between government departments are strictly governed under your explicit consent (Digital Personal Data Protection Act 2023).
                   </>

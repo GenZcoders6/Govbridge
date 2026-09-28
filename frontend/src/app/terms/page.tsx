@@ -4,7 +4,12 @@ import { AppShell } from "@/components/AppShell";
 
 export default function TermsPage() {
   return (
-    <AppShell title="Terms & Conditions" subtitle="GovBridge Portal Terms of Service">
+    <AppShell
+      requireAuth={false}
+      title="Terms & Conditions"
+      subtitle="GovBridge Portal Terms of Service"
+      breadcrumb={["Home", "Terms & Conditions"]}
+    >
       <div className="page-header" style={{ marginBottom: 20 }}>
         <div>
           <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase" }}>TERMS OF SERVICE</div>

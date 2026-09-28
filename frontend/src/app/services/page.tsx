@@ -109,7 +109,7 @@ export default function ServicesPage() {
   };
 
   return (
-    <AppShell title="Departmental Services" breadcrumb={["Home", "Department Officer", "Departmental Services"]}>
+    <AppShell requireAuth={false} title="Departmental Services" breadcrumb={["Home", "Departmental Services"]}>
       <div className="gov-page-header">
         <div>
           <h1 className="gov-page-title">Departmental Services</h1>

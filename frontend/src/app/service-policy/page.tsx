@@ -4,7 +4,12 @@ import { AppShell } from "@/components/AppShell";
 
 export default function ServicePolicyPage() {
   return (
-    <AppShell title="Service & Concession Policy" subtitle="Government Service Fee & Subsidy Policy">
+    <AppShell
+      requireAuth={false}
+      title="Service & Concession Policy"
+      subtitle="Government Service Fee & Subsidy Policy"
+      breadcrumb={["Home", "Service Policy"]}
+    >
       <div className="page-header" style={{ marginBottom: 20 }}>
         <div>
           <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase" }}>SERVICE POLICY</div>

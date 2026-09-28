@@ -4,7 +4,12 @@ import { AppShell } from "@/components/AppShell";
 
 export default function CookiesPage() {
   return (
-    <AppShell title="Cookies Policy" subtitle="Session & Cookie Usage Framework">
+    <AppShell
+      requireAuth={false}
+      title="Cookies Policy"
+      subtitle="Session & Cookie Usage Framework"
+      breadcrumb={["Home", "Cookies Policy"]}
+    >
       <div className="page-header" style={{ marginBottom: 20 }}>
         <div>
           <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase" }}>COOKIE TRANSPARENCY</div>

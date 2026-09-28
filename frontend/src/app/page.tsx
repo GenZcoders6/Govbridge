@@ -1411,37 +1411,25 @@ export default function Home() {
               <div style={{ fontSize: 14, fontWeight: 800, color: "#4ade80", marginBottom: 10 }}>
                 ©2026 myScheme · GovBridge
               </div>
-              <div style={{ fontSize: 12, color: "#cbd5e1", lineHeight: 1.6, marginBottom: 16 }}>
+              <div style={{ fontSize: 12, color: "#cbd5e1", lineHeight: 1.6 }}>
                 <strong>Powered by Digital India Corporation (DIC)</strong><br />
                 Ministry of Electronics &amp; IT (MeitY)<br />
                 Government of India®
               </div>
-              <Link
-                href="/contact"
-                style={{
-                  display: "inline-block",
-                  padding: "6px 14px",
-                  border: "1px solid rgba(255,255,255,0.3)",
-                  borderRadius: 6,
-                  color: "#ffffff",
-                  fontSize: 12,
-                  fontWeight: 700,
-                  textDecoration: "none",
-                }}
-              >
-                Connect on Social Media
-              </Link>
             </div>
 
             <div>
               <div style={{ fontSize: 15, fontWeight: 800, color: "#ffffff", marginBottom: 14 }}>Quick Links</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8, fontSize: 13, color: "#94a3b8" }}>
-                <Link href="/contact" style={{ color: "#cbd5e1", textDecoration: "none" }}>› About Us</Link>
+                <Link href="/about" style={{ color: "#cbd5e1", textDecoration: "none" }}>› About Us</Link>
                 <Link href="/contact" style={{ color: "#cbd5e1", textDecoration: "none" }}>› Contact Us</Link>
+                <Link href="/services" style={{ color: "#cbd5e1", textDecoration: "none" }}>› Services Directory</Link>
                 <Link href="/accessibility" style={{ color: "#cbd5e1", textDecoration: "none" }}>› Accessibility Statement</Link>
                 <Link href="/privacy" style={{ color: "#cbd5e1", textDecoration: "none" }}>› Privacy Policy (DPDP)</Link>
                 <Link href="/terms" style={{ color: "#cbd5e1", textDecoration: "none" }}>› Terms &amp; Conditions</Link>
-                <Link href="/dashboard" style={{ color: "#cbd5e1", textDecoration: "none" }}>› Dashboard</Link>
+                <Link href={isAuthenticated ? "/dashboard" : "/login"} style={{ color: "#cbd5e1", textDecoration: "none" }}>
+                  › {isAuthenticated ? "Portal Dashboard" : "Citizen / Officer Portal"}
+                </Link>
               </div>
             </div>
 

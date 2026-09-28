@@ -14,7 +14,7 @@ export function Sidebar() {
   const { user } = useAuthStore();
   const { activeDepartment } = useDepartmentStore();
 
-  const userRole = user?.role || "DEPARTMENT_OFFICER";
+  const userRole = user?.role;
   const deptInfo = DEPARTMENTS[activeDepartment] || DEPARTMENTS.ALL;
 
   const isActive = (href: string) => {
@@ -26,7 +26,19 @@ export function Sidebar() {
   let sidebarTitle = "DEPARTMENTAL MENU";
   let navItems: NavItem[] = [];
 
-  if (userRole === "CITIZEN") {
+  if (!user) {
+    sidebarTitle = "PUBLIC DIRECTORY";
+    navItems = [
+      { label: "Home", href: "/" },
+      { label: "Browse Services", href: "/services" },
+      { label: "About GovBridge", href: "/about" },
+      { label: "Nodal Officers & Contact", href: "/contact" },
+      { label: "Accessibility Statement", href: "/accessibility" },
+      { label: "Privacy Policy (DPDP)", href: "/privacy" },
+      { label: "Terms & Conditions", href: "/terms" },
+      { label: "Citizen / Officer Login", href: "/login" },
+    ];
+  } else if (userRole === "CITIZEN") {
     sidebarTitle = "CITIZEN PORTAL";
     navItems = [
       { label: "Citizen Home", href: "/dashboard" },
@@ -192,7 +204,7 @@ export function Sidebar() {
           <span>{deptInfo.sealEmoji}</span>
           <span>{deptInfo.shortName} Authority</span>
         </div>
-        <div>Active Role: <strong style={{ color: "#38bdf8" }}>{userRole.replace("_", " ")}</strong></div>
+        <div>Active Role: <strong style={{ color: "#38bdf8" }}>{userRole ? userRole.replace("_", " ") : "Public Visitor"}</strong></div>
         <div style={{ fontSize: 10.5, color: "#34d399", marginTop: 4, display: "flex", alignItems: "center", gap: 4 }}>
           <span>🟢</span> DPDP Act 2023 Compliant
         </div>

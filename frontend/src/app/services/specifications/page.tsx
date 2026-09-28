@@ -19,7 +19,7 @@ export default function ServiceDetailsPage() {
   ];
 
   return (
-    <AppShell title="Service Details" breadcrumb={["Home", "Department Officer", "Services", "UIDAI-KYC-001 Details"]}>
+    <AppShell requireAuth={false} title="Service Details" breadcrumb={["Home", "Services", "UIDAI-KYC-001 Details"]}>
       <div className="gov-page-header">
         <div>
           <h1 className="gov-page-title">Service Details</h1>

@@ -143,7 +143,7 @@ export function Header({ title }: HeaderProps) {
             }}
           >
             <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#10b981", display: "inline-block" }} />
-            {user?.role === "CITIZEN" ? "CITIZEN PORTAL" : `${currentDept.shortName} OFFICER PORTAL`}
+            {user?.role === "CITIZEN" ? "CITIZEN PORTAL" : user ? `${currentDept.shortName} OFFICER PORTAL` : "GOVERNMENT PUBLIC PORTAL"}
           </div>
 
           {user ? (
@@ -182,7 +182,7 @@ export function Header({ title }: HeaderProps) {
                 textDecoration: "none",
               }}
             >
-              Officer Login &rarr;
+              Officer &amp; Citizen Login &rarr;
             </Link>
           )}
         </div>

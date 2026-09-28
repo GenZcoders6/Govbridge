@@ -4,7 +4,12 @@ import { AppShell } from "@/components/AppShell";
 
 export default function ContactPage() {
   return (
-    <AppShell title="Department & Nodal Contact Details" subtitle="Official Nodal Officers & Helpdesk">
+    <AppShell
+      requireAuth={false}
+      title="Department & Nodal Contact Details"
+      subtitle="Official Nodal Officers & Helpdesk"
+      breadcrumb={["Home", "Contact Us"]}
+    >
       <div className="page-header" style={{ marginBottom: 20 }}>
         <div>
           <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase" }}>OFFICIAL CONTACT DIRECTORY</div>

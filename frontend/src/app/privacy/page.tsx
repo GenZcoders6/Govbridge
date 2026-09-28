@@ -4,7 +4,12 @@ import { AppShell } from "@/components/AppShell";
 
 export default function PrivacyPage() {
   return (
-    <AppShell title="Privacy Policy & DPDP Compliance" subtitle="Digital Personal Data Protection (DPDP) Act 2023 Framework">
+    <AppShell
+      requireAuth={false}
+      title="Privacy Policy & DPDP Compliance"
+      subtitle="Digital Personal Data Protection (DPDP) Act 2023 Framework"
+      breadcrumb={["Home", "Privacy Policy"]}
+    >
       <div className="page-header" style={{ marginBottom: 20 }}>
         <div>
           <div style={{ fontSize: 11, color: "#16a34a", fontWeight: 700, textTransform: "uppercase" }}>

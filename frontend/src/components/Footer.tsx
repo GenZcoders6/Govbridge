@@ -18,35 +18,19 @@ export function Footer() {
             <div style={{ fontSize: 13, fontWeight: 800, color: "#4ade80", marginBottom: 8 }}>
               ©{currentYear} myScheme &bull; GovBridge
             </div>
-            <div style={{ fontSize: 11.5, color: "#cbd5e1", lineHeight: 1.6, marginBottom: 14 }}>
+            <div style={{ fontSize: 11.5, color: "#cbd5e1", lineHeight: 1.6 }}>
               <strong>Powered by Digital India Corporation (DIC)</strong><br />
               Ministry of Electronics &amp; IT (MeitY)<br />
               Government of India®
             </div>
-            <Link
-              href="/contact"
-              style={{
-                display: "inline-block",
-                padding: "5px 12px",
-                border: "1px solid rgba(255,255,255,0.2)",
-                borderRadius: 6,
-                color: "#ffffff",
-                fontSize: 11.5,
-                fontWeight: 700,
-                textDecoration: "none",
-                background: "rgba(255,255,255,0.05)",
-              }}
-            >
-              Connect on Support Portal
-            </Link>
           </div>
 
           <div>
             <div style={{ fontSize: 14, fontWeight: 800, color: "#ffffff", marginBottom: 12 }}>Quick Links</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 12, color: "#94a3b8" }}>
-              <Link href="/contact" style={{ color: "#cbd5e1", textDecoration: "none" }}>› About GovBridge</Link>
+              <Link href="/about" style={{ color: "#cbd5e1", textDecoration: "none" }}>› About GovBridge</Link>
+              <Link href="/contact" style={{ color: "#cbd5e1", textDecoration: "none" }}>› Contact &amp; Nodal Officers</Link>
               <Link href="/services" style={{ color: "#cbd5e1", textDecoration: "none" }}>› Department Services</Link>
-              <Link href="/applications" style={{ color: "#cbd5e1", textDecoration: "none" }}>› Application Register</Link>
               <Link href="/privacy" style={{ color: "#cbd5e1", textDecoration: "none" }}>› Privacy Policy (DPDP Act)</Link>
               <Link href="/accessibility" style={{ color: "#cbd5e1", textDecoration: "none" }}>› Accessibility Statement</Link>
               <Link href="/terms" style={{ color: "#cbd5e1", textDecoration: "none" }}>› Terms &amp; Conditions</Link>

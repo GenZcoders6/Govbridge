@@ -4,7 +4,12 @@ import { AppShell } from "@/components/AppShell";
 
 export default function AccessibilityPage() {
   return (
-    <AppShell title="Accessibility Statement" subtitle="WCAG 2.1 Level AA Compliance & Features">
+    <AppShell
+      requireAuth={false}
+      title="Accessibility Statement"
+      subtitle="WCAG 2.1 Level AA Compliance & Features"
+      breadcrumb={["Home", "Accessibility"]}
+    >
       <div className="page-header" style={{ marginBottom: 20 }}>
         <div>
           <div style={{ fontSize: 11, color: "#2563eb", fontWeight: 700, textTransform: "uppercase" }}>INCLUSIVE e-GOVERNANCE</div>
