@@ -41,12 +41,15 @@ export function AppShell({ children, title, subtitle, requiredRoles, breadcrumb 
     );
   }
 
-  // Generate default breadcrumb if not provided
-  const defaultBreadcrumbs = breadcrumb || [
-    "Home",
-    "Department Officer",
-    title,
-  ];
+  // Generate role-aware breadcrumb if not provided
+  const isCitizen = user?.role === "CITIZEN";
+  const defaultBreadcrumbs = breadcrumb
+    ? breadcrumb.map((b) => (b === "Department Officer" && isCitizen ? "Citizen Portal" : b))
+    : [
+        "Home",
+        isCitizen ? "Citizen Portal" : "Department Officer",
+        title,
+      ];
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "#f8fafc" }}>
@@ -79,10 +82,25 @@ export function AppShell({ children, title, subtitle, requiredRoles, breadcrumb 
             </div>
 
             {/* Official Notice Banner */}
-            <div className="gov-notice-banner">
-              <span style={{ fontSize: 16 }}>ℹ️</span>
+            <div
+              className="gov-notice-banner"
+              style={
+                isCitizen
+                  ? { background: "#f0fdf4", borderColor: "#86efac", color: "#166534" }
+                  : {}
+              }
+            >
+              <span style={{ fontSize: 16 }}>{isCitizen ? "🛡️" : "ℹ️"}</span>
               <span>
-                <strong>Official Notice:</strong> Welcome to the Department Officer Portal. All service verifications and data inter-operability requests are monitored under DPDP Act 2023 guidelines.
+                {isCitizen ? (
+                  <>
+                    <strong>DPDP Protected Citizen Portal:</strong> All your personal data exchanges between government departments are strictly governed under your explicit consent (Digital Personal Data Protection Act 2023).
+                  </>
+                ) : (
+                  <>
+                    <strong>Official Notice:</strong> Welcome to the Department Officer Portal. All service verifications and data inter-operability requests are monitored under DPDP Act 2023 guidelines.
+                  </>
+                )}
               </span>
             </div>
 
