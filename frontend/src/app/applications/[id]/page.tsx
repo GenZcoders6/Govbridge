@@ -1,5 +1,5 @@
 "use client";
-import { useState, use } from "react";
+import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
 
@@ -10,6 +10,33 @@ export default function ApplicationReviewPage({ params }: { params: Promise<{ id
   const [decision, setDecision] = useState("Approve");
   const [remarks, setRemarks] = useState("");
   const [submitted, setSubmitted] = useState(false);
+
+  // Dynamic state loaded from localStorage if user just submitted this application
+  const [applicantName, setApplicantName] = useState("Rajesh Sharma");
+  const [serviceName, setServiceName] = useState("Unified Skill Benefit & Stipend Allowance");
+  const [owningDept, setOwningDept] = useState("Ministry of Skill Development & Entrepreneurship (MSDE)");
+  const [mobile, setMobile] = useState("+91 98765 43210");
+  const [email, setEmail] = useState("sunil.patil@govbridge.demo");
+  const [appDate, setAppDate] = useState("28/09/2026 04:15 PM");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = JSON.parse(localStorage.getItem("gb_local_applications") || "[]");
+        const found = stored.find((a: { id?: string; reference_number?: string }) => a.id === appId || a.reference_number === appId);
+        if (found) {
+          if (found.form_data?.full_name) setApplicantName(found.form_data.full_name);
+          if (found.form_data?.service || found.title) setServiceName(found.form_data?.service || found.title);
+          if (found.department_id || found.form_data?.owning_authority) setOwningDept(found.form_data?.owning_authority || found.department_id);
+          if (found.form_data?.mobile) setMobile(found.form_data.mobile);
+          if (found.form_data?.email) setEmail(found.form_data.email);
+          if (found.submitted_at) setAppDate(new Date(found.submitted_at).toLocaleString("en-IN"));
+        }
+      } catch {
+        // ignore
+      }
+    }
+  }, [appId]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +72,7 @@ export default function ApplicationReviewPage({ params }: { params: Promise<{ id
             <tbody>
               <tr>
                 <th>Applicant Name</th>
-                <td>Rajesh Sharma</td>
+                <td>{applicantName}</td>
                 <th>Master Citizen ID</th>
                 <td><code>MAHA-CIT-10284</code></td>
               </tr>
@@ -57,9 +84,9 @@ export default function ApplicationReviewPage({ params }: { params: Promise<{ id
               </tr>
               <tr>
                 <th>Mobile Number</th>
-                <td>+91 98765 43210</td>
+                <td>{mobile}</td>
                 <th>Email Address</th>
-                <td>rajesh.sharma@example.gov.in</td>
+                <td>{email}</td>
               </tr>
             </tbody>
           </table>
@@ -74,15 +101,15 @@ export default function ApplicationReviewPage({ params }: { params: Promise<{ id
             <tbody>
               <tr>
                 <th>Service Name</th>
-                <td>Unified Skill Benefit &amp; Stipend Allowance</td>
+                <td>{serviceName}</td>
                 <th>Application Date</th>
-                <td>27/09/2026 09:42 AM</td>
+                <td>{appDate}</td>
               </tr>
               <tr>
                 <th>Owning Department</th>
-                <td>Ministry of Skill Development &amp; Entrepreneurship (MSDE)</td>
+                <td>{owningDept}</td>
                 <th>Service SLA</th>
-                <td>48 Hours (2 Business Days)</td>
+                <td>24 - 48 Hours</td>
               </tr>
               <tr>
                 <th>Current Status</th>

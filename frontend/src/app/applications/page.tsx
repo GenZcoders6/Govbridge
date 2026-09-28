@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
 import { useDepartmentStore, DEPARTMENTS } from "@/store/departmentStore";
@@ -59,16 +59,40 @@ export default function ApplicationsPage() {
   const [appNo, setAppNo] = useState("");
   const [applicantName, setApplicantName] = useState("");
   const [status, setStatus] = useState("ALL");
+  const [localApps, setLocalApps] = useState<AppRecord[]>([]);
+
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem("gb_local_applications") || "[]");
+      if (Array.isArray(stored) && stored.length > 0) {
+        const mapped: AppRecord[] = stored.map((item: { id?: string; department_id?: string; form_data?: { full_name?: string; service?: string }; title?: string; submitted_at?: string; created_at?: string }) => ({
+          id: item.id || "APP-2026-NEW",
+          deptCode: item.department_id || "MSRTC",
+          applicant: item.form_data?.full_name || "Sunil Patil",
+          service: item.form_data?.service || item.title || "Government Service",
+          date: new Date(item.submitted_at || item.created_at || Date.now()).toLocaleDateString("en-IN"),
+          stage: "Automated Verifications",
+          status: "Pending Review",
+          badgeClass: "gov-badge-warning",
+        }));
+        setLocalApps(mapped);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const allApps = useMemo(() => [...localApps, ...APPLICATIONS_DATA], [localApps]);
 
   const filteredApps = useMemo(() => {
-    return APPLICATIONS_DATA.filter((app) => {
+    return allApps.filter((app) => {
       const matchDept = activeDepartment === "ALL" || app.deptCode === activeDepartment;
       const matchNo = !appNo || app.id.toLowerCase().includes(appNo.toLowerCase());
       const matchName = !applicantName || app.applicant.toLowerCase().includes(applicantName.toLowerCase());
       const matchStatus = status === "ALL" || app.status === status;
       return matchDept && matchNo && matchName && matchStatus;
     });
-  }, [activeDepartment, appNo, applicantName, status]);
+  }, [allApps, activeDepartment, appNo, applicantName, status]);
 
   const handleReset = () => {
     setAppNo("");
