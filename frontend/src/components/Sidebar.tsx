@@ -153,18 +153,23 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="gov-sidebar">
-      <div className="gov-sidebar-title">
-        {sidebarTitle}
+    <aside className="sidebar">
+      <div className="sidebar-header">
+        <div className="sidebar-title">
+          {sidebarTitle}
+        </div>
+        <div style={{ fontSize: 10, color: "#94a3b8", fontWeight: 600, marginTop: 2 }}>
+          {deptInfo.sealEmoji} {deptInfo.fullName}
+        </div>
       </div>
 
-      <ul className="gov-sidebar-nav">
+      <ul className="sidebar-nav">
         {navItems.map((item) => {
           const active = isActive(item.href);
           return (
             <li key={item.label}>
-              <Link href={item.href} className={active ? "active" : ""}>
-                {item.label}
+              <Link href={item.href} className={`sidebar-item ${active ? "active" : ""}`}>
+                <span>{item.label}</span>
               </Link>
             </li>
           );
@@ -175,19 +180,22 @@ export function Sidebar() {
       <div
         style={{
           marginTop: "auto",
-          padding: 12,
-          background: "#f8f9fa",
-          borderTop: "1px solid #e0e0e0",
-          fontSize: 11,
-          color: "#555555",
-          lineHeight: 1.4,
+          padding: "16px 18px",
+          background: "rgba(0, 0, 0, 0.25)",
+          borderTop: "1px solid rgba(255, 255, 255, 0.08)",
+          fontSize: 11.5,
+          color: "#cbd5e1",
+          lineHeight: 1.5,
         }}
       >
-        <div style={{ fontWeight: 700, color: "#003366", marginBottom: 2 }}>
-          {deptInfo.sealEmoji} {deptInfo.shortName}
+        <div style={{ fontWeight: 800, color: "#ffffff", marginBottom: 2, display: "flex", alignItems: "center", gap: 6 }}>
+          <span>{deptInfo.sealEmoji}</span>
+          <span>{deptInfo.shortName} Authority</span>
         </div>
-        <div>Role: <strong>{userRole.replace("_", " ")}</strong></div>
-        <div style={{ fontSize: 10, color: "#777777", marginTop: 2 }}>DPDP Act 2023 Audited</div>
+        <div>Active Role: <strong style={{ color: "#38bdf8" }}>{userRole.replace("_", " ")}</strong></div>
+        <div style={{ fontSize: 10.5, color: "#34d399", marginTop: 4, display: "flex", alignItems: "center", gap: 4 }}>
+          <span>🟢</span> DPDP Act 2023 Compliant
+        </div>
       </div>
     </aside>
   );

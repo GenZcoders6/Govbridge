@@ -26,39 +26,42 @@ export function Header({ title }: HeaderProps) {
       {/* 1. Topmost Utility & Accessibility Bar */}
       <div
         style={{
-          background: "#002147",
-          color: "#ffffff",
-          padding: "4px 20px",
+          background: "#050d1f",
+          color: "#cbd5e1",
+          padding: "6px 24px",
           fontSize: 11,
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif",
+          fontFamily: "var(--font-sans)",
+          borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
         }}
       >
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          <span>Government of India</span>
-          <span>|</span>
-          <span style={{ fontWeight: 700 }}>Government of Maharashtra</span>
+          <span style={{ fontWeight: 700, color: "#ffffff", display: "inline-flex", alignItems: "center", gap: 6 }}>
+            <span>🇮🇳</span> GOVERNMENT OF INDIA
+          </span>
+          <span style={{ opacity: 0.4 }}>|</span>
+          <span style={{ fontWeight: 600, color: "#94a3b8" }}>Government of Maharashtra</span>
         </div>
 
         <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
-          <a href="#main-content" style={{ color: "#ffffff", textDecoration: "none" }}>
+          <a href="#main-content" style={{ color: "#cbd5e1", textDecoration: "none" }} className="hover:text-white">
             Skip to Main Content
           </a>
-          <span>|</span>
+          <span style={{ opacity: 0.4 }}>|</span>
           <span style={{ cursor: "pointer" }}>Screen Reader Access</span>
-          <span>|</span>
+          <span style={{ opacity: 0.4 }}>|</span>
           <div style={{ display: "flex", gap: 4, fontWeight: 700 }}>
-            <span style={{ cursor: "pointer" }}>A-</span>
-            <span style={{ cursor: "pointer" }}>A</span>
-            <span style={{ cursor: "pointer" }}>A+</span>
+            <button style={{ background: "none", border: "none", color: "#cbd5e1", cursor: "pointer", fontSize: 11 }}>A-</button>
+            <button style={{ background: "none", border: "none", color: "#ffffff", cursor: "pointer", fontSize: 11, fontWeight: 800 }}>A</button>
+            <button style={{ background: "none", border: "none", color: "#cbd5e1", cursor: "pointer", fontSize: 11 }}>A+</button>
           </div>
-          <span>|</span>
-          <div style={{ display: "flex", gap: 6 }}>
-            <span style={{ fontWeight: 700, cursor: "pointer" }}>English</span>
-            <span>|</span>
-            <span style={{ cursor: "pointer" }}>मराठी</span>
+          <span style={{ opacity: 0.4 }}>|</span>
+          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+            <span style={{ fontWeight: 800, color: "#4ade80", cursor: "pointer" }}>English</span>
+            <span style={{ opacity: 0.4 }}>|</span>
+            <span style={{ cursor: "pointer", color: "#cbd5e1" }}>मराठी</span>
           </div>
         </div>
       </div>
@@ -66,93 +69,121 @@ export function Header({ title }: HeaderProps) {
       {/* 2. Main Official Identity Banner */}
       <div
         style={{
-          padding: "12px 20px",
+          padding: "14px 28px",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          background: "#ffffff",
-          borderBottom: "1px solid #e0e0e0",
+          background: "linear-gradient(135deg, #071529 0%, #0c2044 50%, #0f2d5e 100%)",
+          color: "#ffffff",
+          borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
         }}
       >
-        {/* Left: Government Seal & Title */}
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          {/* Official Emblem Representation */}
-          <div
-            style={{
-              width: 44,
-              height: 48,
-              border: "1.5px solid #003366",
-              borderRadius: 2,
-              background: "#f0f4f8",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              textAlign: "center",
-              padding: 2,
-            }}
-          >
-            <div style={{ fontSize: 16, lineHeight: 1 }}>🏛️</div>
-            <div style={{ fontSize: 7, fontWeight: 900, color: "#003366", textTransform: "uppercase", marginTop: 2 }}>
-              SATYAMEVA JAYATE
-            </div>
-          </div>
+        {/* Left: Government Emblem & GovBridge Title */}
+        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+          <Link href="/" style={{ textDecoration: "none" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+              {/* Ashoka Emblem Badge */}
+              <div
+                style={{
+                  height: 44,
+                  padding: "4px 10px",
+                  background: "rgba(255, 255, 255, 0.08)",
+                  borderRadius: 10,
+                  border: "1px solid rgba(255, 255, 255, 0.15)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  backdropFilter: "blur(8px)",
+                }}
+              >
+                <div style={{ fontSize: 20 }}>🏛️</div>
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  <span style={{ fontSize: 11, fontWeight: 900, color: "#ffffff", lineHeight: 1.1 }}>
+                    भारत सरकार
+                  </span>
+                  <span style={{ fontSize: 9, fontWeight: 700, color: "#34d399", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                    Government of India
+                  </span>
+                </div>
+              </div>
 
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 800, color: "#003366", textTransform: "uppercase", letterSpacing: "0.02em" }}>
-              Government of Maharashtra
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 20, fontWeight: 900, color: "#ffffff", letterSpacing: "-0.02em" }}>
+                    GovBridge<span style={{ color: "#38bdf8" }}>.gov.in</span>
+                  </span>
+                  <span style={{ fontSize: 9, fontWeight: 800, background: "#10b981", color: "#ffffff", padding: "2px 8px", borderRadius: 12, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                    DPDP 2023 LIVE
+                  </span>
+                </div>
+                <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 600, marginTop: 1 }}>
+                  Inter-Departmental e-Governance &amp; Service Integration Portal
+                </div>
+              </div>
             </div>
-            <div style={{ fontSize: 18, fontWeight: 900, color: "#002147", lineHeight: 1.2 }}>
-              GovBridge
-            </div>
-            <div style={{ fontSize: 11, color: "#555555", fontWeight: 600 }}>
-              Inter-Departmental e-Governance &amp; Service Integration Portal
-            </div>
-          </div>
+          </Link>
         </div>
 
-        {/* Right: User Login & Department Details */}
-        <div style={{ textAlign: "right" }}>
+        {/* Right: User Role Badge & Authenticated Session Info */}
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          {/* Active Portal Role Pill */}
           <div
             style={{
-              fontSize: 10,
+              padding: "6px 14px",
+              borderRadius: 20,
+              background: "rgba(16, 185, 129, 0.15)",
+              border: "1px solid rgba(16, 185, 129, 0.3)",
+              color: "#34d399",
+              fontSize: 11,
               fontWeight: 800,
-              background: "#003366",
-              color: "#ffffff",
-              padding: "2px 8px",
-              borderRadius: 2,
-              display: "inline-block",
-              textTransform: "uppercase",
               letterSpacing: "0.04em",
-              marginBottom: 4,
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
             }}
           >
+            <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#10b981", display: "inline-block" }} />
             {user?.role === "CITIZEN" ? "CITIZEN PORTAL" : `${currentDept.shortName} OFFICER PORTAL`}
           </div>
 
           {user ? (
-            <div style={{ fontSize: 12, color: "#212529" }}>
-              Logged in: <strong>{user.full_name || "Official"}</strong> ({user.role?.replace("_", " ")})
-              <span style={{ margin: "0 6px", color: "#ccc" }}>|</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 12.5, color: "#e2e8f0" }}>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ fontWeight: 700, color: "#ffffff" }}>{user.full_name || "Official"}</div>
+                <div style={{ fontSize: 10, color: "#94a3b8", fontWeight: 600 }}>{user.role?.replace("_", " ")}</div>
+              </div>
               <button
                 onClick={logout}
                 style={{
-                  background: "none",
-                  border: "none",
-                  color: "#721c24",
+                  background: "rgba(239, 68, 68, 0.15)",
+                  border: "1px solid rgba(239, 68, 68, 0.3)",
+                  color: "#fca5a5",
+                  padding: "5px 12px",
+                  borderRadius: 8,
                   fontWeight: 700,
                   cursor: "pointer",
-                  textDecoration: "underline",
-                  fontSize: 12,
+                  fontSize: 11.5,
+                  transition: "all 0.15s ease",
                 }}
               >
-                Logout
+                Sign Out
               </button>
             </div>
           ) : (
-            <div style={{ fontSize: 12, color: "#003366", fontWeight: 700 }}>
-              <Link href="/login" style={{ color: "#003366" }}>Officer Login</Link>
-            </div>
+            <Link
+              href="/login"
+              style={{
+                background: "#059669",
+                color: "#ffffff",
+                padding: "6px 16px",
+                borderRadius: 8,
+                fontSize: 12,
+                fontWeight: 700,
+                textDecoration: "none",
+              }}
+            >
+              Officer Login &rarr;
+            </Link>
           )}
         </div>
       </div>
@@ -160,110 +191,132 @@ export function Header({ title }: HeaderProps) {
       {/* 3. Horizontal Main Navigation Bar */}
       <nav
         style={{
-          background: "#003366",
-          padding: "0 20px",
+          background: "#0c2044",
+          padding: "0 24px",
           display: "flex",
-          gap: 2,
-          borderBottom: "2px solid #002147",
+          gap: 6,
+          borderTop: "1px solid rgba(255, 255, 255, 0.08)",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
         }}
       >
         <Link
           href="/dashboard"
           style={{
-            padding: "9px 16px",
-            color: "#ffffff",
+            padding: "10px 18px",
+            color: isNavActive("/dashboard") ? "#34d399" : "#cbd5e1",
             textDecoration: "none",
-            fontSize: 12,
+            fontSize: 12.5,
             fontWeight: isNavActive("/dashboard") ? 800 : 600,
-            background: isNavActive("/dashboard") ? "#002147" : "transparent",
-            borderBottom: isNavActive("/dashboard") ? "3px solid #ffcc00" : "3px solid transparent",
+            borderBottom: isNavActive("/dashboard") ? "3px solid #10b981" : "3px solid transparent",
+            transition: "all 0.15s ease",
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
           }}
         >
-          Home
-        </Link>
-        <Link
-          href="/about"
-          style={{
-            padding: "9px 16px",
-            color: "#ffffff",
-            textDecoration: "none",
-            fontSize: 12,
-            fontWeight: isNavActive("/about") ? 800 : 600,
-            background: isNavActive("/about") ? "#002147" : "transparent",
-            borderBottom: isNavActive("/about") ? "3px solid #ffcc00" : "3px solid transparent",
-          }}
-        >
-          About Department
+          <span>🏠</span> Home
         </Link>
         <Link
           href="/services"
           style={{
-            padding: "9px 16px",
-            color: "#ffffff",
+            padding: "10px 18px",
+            color: isNavActive("/services") ? "#34d399" : "#cbd5e1",
             textDecoration: "none",
-            fontSize: 12,
+            fontSize: 12.5,
             fontWeight: isNavActive("/services") ? 800 : 600,
-            background: isNavActive("/services") ? "#002147" : "transparent",
-            borderBottom: isNavActive("/services") ? "3px solid #ffcc00" : "3px solid transparent",
+            borderBottom: isNavActive("/services") ? "3px solid #10b981" : "3px solid transparent",
+            transition: "all 0.15s ease",
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
           }}
         >
-          Services
+          <span>⚙️</span> Services
         </Link>
         <Link
           href="/applications"
           style={{
-            padding: "9px 16px",
-            color: "#ffffff",
+            padding: "10px 18px",
+            color: isNavActive("/applications") ? "#34d399" : "#cbd5e1",
             textDecoration: "none",
-            fontSize: 12,
+            fontSize: 12.5,
             fontWeight: isNavActive("/applications") ? 800 : 600,
-            background: isNavActive("/applications") ? "#002147" : "transparent",
-            borderBottom: isNavActive("/applications") ? "3px solid #ffcc00" : "3px solid transparent",
+            borderBottom: isNavActive("/applications") ? "3px solid #10b981" : "3px solid transparent",
+            transition: "all 0.15s ease",
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
           }}
         >
-          Applications
+          <span>📋</span> Applications
+        </Link>
+        <Link
+          href="/connectors"
+          style={{
+            padding: "10px 18px",
+            color: isNavActive("/connectors") ? "#34d399" : "#cbd5e1",
+            textDecoration: "none",
+            fontSize: 12.5,
+            fontWeight: isNavActive("/connectors") ? 800 : 600,
+            borderBottom: isNavActive("/connectors") ? "3px solid #10b981" : "3px solid transparent",
+            transition: "all 0.15s ease",
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+          }}
+        >
+          <span>🔌</span> Gateways &amp; Connectors
         </Link>
         <Link
           href="/reports"
           style={{
-            padding: "9px 16px",
-            color: "#ffffff",
+            padding: "10px 18px",
+            color: isNavActive("/reports") ? "#34d399" : "#cbd5e1",
             textDecoration: "none",
-            fontSize: 12,
+            fontSize: 12.5,
             fontWeight: isNavActive("/reports") ? 800 : 600,
-            background: isNavActive("/reports") ? "#002147" : "transparent",
-            borderBottom: isNavActive("/reports") ? "3px solid #ffcc00" : "3px solid transparent",
+            borderBottom: isNavActive("/reports") ? "3px solid #10b981" : "3px solid transparent",
+            transition: "all 0.15s ease",
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
           }}
         >
-          Reports
+          <span>📊</span> Reports
         </Link>
         <Link
-          href="/notifications"
+          href="/audit"
           style={{
-            padding: "9px 16px",
-            color: "#ffffff",
+            padding: "10px 18px",
+            color: isNavActive("/audit") ? "#34d399" : "#cbd5e1",
             textDecoration: "none",
-            fontSize: 12,
-            fontWeight: isNavActive("/notifications") ? 800 : 600,
-            background: isNavActive("/notifications") ? "#002147" : "transparent",
-            borderBottom: isNavActive("/notifications") ? "3px solid #ffcc00" : "3px solid transparent",
+            fontSize: 12.5,
+            fontWeight: isNavActive("/audit") ? 800 : 600,
+            borderBottom: isNavActive("/audit") ? "3px solid #10b981" : "3px solid transparent",
+            transition: "all 0.15s ease",
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
           }}
         >
-          Notifications
+          <span>🛡️</span> Audit Trail
         </Link>
         <Link
-          href="/help"
+          href="/contact"
           style={{
-            padding: "9px 16px",
-            color: "#ffffff",
+            padding: "10px 18px",
+            color: isNavActive("/contact") ? "#34d399" : "#cbd5e1",
             textDecoration: "none",
-            fontSize: 12,
-            fontWeight: isNavActive("/help") ? 800 : 600,
-            background: isNavActive("/help") ? "#002147" : "transparent",
-            borderBottom: isNavActive("/help") ? "3px solid #ffcc00" : "3px solid transparent",
+            fontSize: 12.5,
+            fontWeight: isNavActive("/contact") ? 800 : 600,
+            borderBottom: isNavActive("/contact") ? "3px solid #10b981" : "3px solid transparent",
+            transition: "all 0.15s ease",
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
           }}
         >
-          Help
+          <span>❓</span> Help &amp; Support
         </Link>
       </nav>
     </header>

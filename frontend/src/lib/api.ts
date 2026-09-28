@@ -24,16 +24,20 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle 401 — redirect to login
+// Handle 401 — redirect to login only for real invalid tokens
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401 && typeof window !== "undefined") {
-      localStorage.removeItem("gb_token");
-      localStorage.removeItem("gb_user");
-      // Only redirect if not already on the login page
-      if (!window.location.pathname.startsWith("/login")) {
-        window.location.href = "/login";
+      const token = localStorage.getItem("gb_token");
+      // Do not clear session or force redirect if using client-side demo tokens
+      const isDemoToken = !token || token.startsWith("token-") || token === "token";
+      if (!isDemoToken) {
+        localStorage.removeItem("gb_token");
+        localStorage.removeItem("gb_user");
+        if (!window.location.pathname.startsWith("/login")) {
+          window.location.href = "/login";
+        }
       }
     }
     return Promise.reject(error);

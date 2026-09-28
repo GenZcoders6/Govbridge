@@ -78,18 +78,34 @@ export default function ApplicationsPage() {
 
   return (
     <AppShell title={`${currentDept.shortName} Applications`} breadcrumb={["Home", "Department Officer", "Applications", currentDept.shortName]}>
-      <div className="gov-page-header">
+      {/* Page Header */}
+      <div className="page-header" style={{ marginBottom: 24 }}>
         <div>
-          <h1 className="gov-page-title">{currentDept.sealEmoji} {currentDept.fullName} — Department Applications</h1>
-          <div className="gov-page-subtitle">Official Applications Processing &amp; Verification Register ({currentDept.serviceCode})</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+            <span style={{ fontSize: 24 }}>{currentDept.sealEmoji}</span>
+            <h1 className="page-header-title" style={{ margin: 0 }}>
+              {currentDept.fullName} — Applications
+            </h1>
+            <span className="gov-badge gov-badge-info" style={{ borderRadius: 12 }}>
+              REGISTER VIEW
+            </span>
+          </div>
+          <div className="page-header-subtitle">
+            Official Applications Processing &amp; Verification Register ({currentDept.serviceCode})
+          </div>
         </div>
       </div>
 
-      {/* Filter Form */}
-      <div className="gov-panel">
-        <div className="gov-panel-header-secondary">FILTER DEPARTMENT APPLICATIONS ({currentDept.shortName})</div>
-        <div className="gov-panel-body">
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
+      {/* Filter Form Card */}
+      <div className="card" style={{ marginBottom: 24 }}>
+        <div className="card-header" style={{ background: "#f8fafc", color: "#0f172a", borderBottom: "1px solid #e2e8f0" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span>🔍</span>
+            <span>FILTER DEPARTMENT APPLICATIONS ({currentDept.shortName})</span>
+          </div>
+        </div>
+        <div className="card-body">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 16 }}>
             <div className="gov-form-group" style={{ margin: 0 }}>
               <label className="gov-form-label">Application Reference No:</label>
               <input
@@ -124,20 +140,23 @@ export default function ApplicationsPage() {
             </div>
           </div>
 
-          <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
-            <button className="gov-btn">Filter Register</button>
+          <div style={{ marginTop: 16, display: "flex", gap: 10 }}>
+            <button className="gov-btn gov-btn-primary">Filter Register</button>
             <button className="gov-btn gov-btn-secondary" onClick={handleReset}>Reset</button>
           </div>
         </div>
       </div>
 
-      {/* Applications Register Table */}
-      <div className="gov-panel">
-        <div className="gov-panel-header">
-          <span>{currentDept.shortName} Application Register</span>
-          <span style={{ fontSize: 11, fontWeight: 400 }}>Showing {filteredApps.length} applications</span>
+      {/* Applications Register Table Card */}
+      <div className="card">
+        <div className="card-header">
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span>📋</span>
+            <span>{currentDept.shortName} Application Register</span>
+          </div>
+          <span style={{ fontSize: 11, color: "#94a3b8", fontWeight: 500 }}>Showing {filteredApps.length} applications</span>
         </div>
-        <div className="gov-panel-body" style={{ padding: 0 }}>
+        <div className="card-body" style={{ padding: 0 }}>
           <table className="gov-table">
             <thead>
               <tr>
@@ -153,16 +172,18 @@ export default function ApplicationsPage() {
             <tbody>
               {filteredApps.map((app) => (
                 <tr key={app.id}>
-                  <td><strong>{app.id}</strong></td>
-                  <td>{app.applicant}</td>
+                  <td>
+                    <strong style={{ color: "#2563eb", fontFamily: "var(--font-mono)" }}>{app.id}</strong>
+                  </td>
+                  <td style={{ fontWeight: 600 }}>{app.applicant}</td>
                   <td>{app.service}</td>
-                  <td>{app.date}</td>
-                  <td>{app.stage}</td>
+                  <td style={{ color: "#64748b", fontSize: 12 }}>{app.date}</td>
+                  <td><span className="gov-badge gov-badge-muted">{app.stage}</span></td>
                   <td>
                     <span className={`gov-badge ${app.badgeClass}`}>{app.status}</span>
                   </td>
                   <td>
-                    <Link href={`/applications/${app.id}`} className="gov-btn gov-btn-sm">
+                    <Link href={`/applications/${app.id}`} className="gov-btn gov-btn-primary gov-btn-sm">
                       Action / Review
                     </Link>
                   </td>

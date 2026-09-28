@@ -49,7 +49,7 @@ export function AppShell({ children, title, subtitle, requiredRoles, breadcrumb 
   ];
 
   return (
-    <div className="gov-app-shell">
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "#f8fafc" }}>
       {/* Formal Header with Top Utility Bar, Identity Header, and Horizontal Nav */}
       <Header title={title} subtitle={subtitle} />
 
@@ -57,36 +57,38 @@ export function AppShell({ children, title, subtitle, requiredRoles, breadcrumb 
       <DepartmentBar />
 
       {/* Main Body Wrapper (Sidebar + Main Content) */}
-      <div className="gov-body-wrapper">
+      <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
         <Sidebar />
 
-        <main className="gov-main-content" id="main-content">
-          {/* Formal Breadcrumb */}
-          <div className="gov-breadcrumb">
-            {defaultBreadcrumbs.map((b, idx) => (
-              <span key={idx}>
-                {idx === 0 ? (
-                  <Link href="/dashboard">{b}</Link>
-                ) : idx === defaultBreadcrumbs.length - 1 ? (
-                  <strong style={{ color: "#003366" }}>{b}</strong>
-                ) : (
-                  <span>{b}</span>
-                )}
-                {idx < defaultBreadcrumbs.length - 1 && <span className="sep">&gt;</span>}
+        <main className="main-content" id="main-content" style={{ flex: 1, background: "#f8fafc" }}>
+          <div className="page-content">
+            {/* Formal Breadcrumb */}
+            <div className="gov-breadcrumb">
+              {defaultBreadcrumbs.map((b, idx) => (
+                <span key={idx} style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                  {idx === 0 ? (
+                    <Link href="/dashboard" style={{ color: "#2563eb", fontWeight: 600 }}>🏠 {b}</Link>
+                  ) : idx === defaultBreadcrumbs.length - 1 ? (
+                    <strong style={{ color: "#0f172a", fontWeight: 800 }}>{b}</strong>
+                  ) : (
+                    <span style={{ color: "#64748b" }}>{b}</span>
+                  )}
+                  {idx < defaultBreadcrumbs.length - 1 && <span style={{ color: "#cbd5e1", margin: "0 2px" }}>&gt;</span>}
+                </span>
+              ))}
+            </div>
+
+            {/* Official Notice Banner */}
+            <div className="gov-notice-banner">
+              <span style={{ fontSize: 16 }}>ℹ️</span>
+              <span>
+                <strong>Official Notice:</strong> Welcome to the Department Officer Portal. All service verifications and data inter-operability requests are monitored under DPDP Act 2023 guidelines.
               </span>
-            ))}
-          </div>
+            </div>
 
-          {/* Official Notice Banner */}
-          <div className="gov-notice-banner">
-            <span>ℹ️</span>
-            <span>
-              <strong>Official Notice:</strong> Welcome to the Department Officer Portal. All service verifications and data inter-operability requests are monitored under DPDP Act 2023 guidelines.
-            </span>
+            {/* Page Body */}
+            {children}
           </div>
-
-          {/* Page Title & Body */}
-          <div>{children}</div>
         </main>
       </div>
 
